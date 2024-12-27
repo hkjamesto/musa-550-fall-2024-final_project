@@ -1,14 +1,23 @@
 ---
-title: "MUSA 550: Final Project Template"
-subtitle: "An example website demonstrating the power of Quarto for sharing analyses on the web"
+title: "MUSA 550 Final Project: Spatiotemporal Crime Cluster Analysis and Forecasting in Los Angeles (LA)"
 ---
 
 ## Welcome!
 
-We can create beautiful websites that describe complex technical analyses in Python using Quarto and deploy them online using GitHub Pages. This combination of tools is a really powerful way to create and share your work. This website is a demo that is meant to be used to create your own Quarto website for the final project in MUSA 550.
+This is my MUSA-550 final project, exploring the evolution of violent crime and property crime hotspots in Los Angeles over time, and forecasting future volumes of violent crimes and property crimes using Seasonal Autoregressive Integrated Moving Average (SARIMA) models.
 
-Quarto is a relatively new tool, but is becoming popular quickly. It’s a successor to the Rmarkdown ecosystem that combines functionality into a single tool and also extends its computation power to other languages. Most importantly for us, Quarto supports executing Python code, allowing us to convert Jupyter notebooks to HTML and share them online.
+## Background
 
-::: {.callout-important}
-This template site, including the layout it uses, is just a suggested place to start! For your final project, you’re welcome (and encouraged) to make as many changes as you like to best fit your project.
-:::
+The analysis of crime hotspots, particularly violent crimes, has important implications for crime control strategies. Violent crimes are especially costly in terms of human and economic impact. Identifying clusters of violent crimes and examining the patterns of these hotspots can help law enforcement agencies and policymakers allocate resources more effectively, maximizing the return on police deployment and resource allocation.
+
+On the other hand, crime trend analysis and forecasting present an intriguing challenge in Criminology. Crime forecasting has been met with skepticism due to its inherent inaccuracies, especially when predictions lack uncertainty assessments. Point forecasts, which predict a single outcome, are often uninformative without understanding the range of possible outcomes. However, using a range of forecasts, represented by "forecast cones", can add nuance to these predictions. These cones provide insight into the uncertainty of forecasts, as well as potential factors that might influence crime rates, helping them to refine the models used for prediction.
+
+Given that budgets are always limited, combining hotspot analysis with more precise forecasts can help policymakers and law enforcement agencies optimize their resource allocation. By targeting areas with the highest crime rates and considering the uncertainty in crime forecasts, they can design more effective budget and resource allocation plans, ultimately improving crime control efficacy.
+
+This project is divided into 3 parts:
+<div>
+   - Exploratory analysis of the crime data set in LA.
+   - Clustering analysis of the crime data set to study the evolution of crime hotspots over time.
+   - Crime forecasting using SARIMA models.
+</div>
+

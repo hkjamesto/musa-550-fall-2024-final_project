@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.37">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Crime Trend Forecasting with SARIMA Models – MUSA 550</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-b5e3097ca6bab6260ed4ce2e73d47aae.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-c44d35fed6381046f2649f7297f82eb1.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../analysis/1-data_preprocessing.html">Analysis</a></li><li class="breadcrumb-item"><a href="../analysis/4-crime_trend_forecasting.html">Crime Trend Forecasting with SARIMA Models</a></li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="Search" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-center sidebar-header">
+      <a href="../index.html" class="sidebar-logo-link">
+      <img src="../images/course-icon.png" alt="" class="sidebar-logo py-0 d-lg-inline d-none">
+      </a>
+      <div class="sidebar-tools-main">
+    <a href="https://sites.google.com/view/hkjamesto/home" title="Personal Website" class="quarto-navigation-tool px-1" aria-label="Personal Website"><i class="bi bi-globe"></i></a>
+    <a href="https://github.com/MUSA-550-Fall-2024/" title="MUSA 550 GitHub" class="quarto-navigation-tool px-1" aria-label="MUSA 550 GitHub"><i class="bi bi-github"></i></a>
+</div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Welcome</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../about.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">About Me</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Analysis</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../analysis/1-data_preprocessing.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Data Pre-processing</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../analysis/2-exploratory_data_analysis.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Data Visualization</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../analysis/3-crime_clustering.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Crime Hotspot Analysis</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../analysis/4-crime_trend_forecasting.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text">Crime Trend Forecasting with SARIMA Models</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../conclusion.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Discussion and Future Work</span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#sarima-forecasting" id="toc-sarima-forecasting" class="nav-link active" data-scroll-target="#sarima-forecasting">SARIMA forecasting</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../analysis/1-data_preprocessing.html">Analysis</a></li><li class="breadcrumb-item"><a href="../analysis/4-crime_trend_forecasting.html">Crime Trend Forecasting with SARIMA Models</a></li></ol></nav>
+<div class="quarto-title">
+<h1 class="title">Crime Trend Forecasting with SARIMA Models</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Let’s import all the necessary libraries.</p>
+<div id="01bc1871-e658-435e-a672-b43e4fda2036" class="cell" data-tags="[]" data-execution_count="1">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Basics</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pmdarima <span class="im">import</span> auto_arima</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Data Visualization-related Libraries</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="co">## altair</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> altair <span class="im">as</span> alt</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">## Panel</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> panel <span class="im">as</span> pn</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>pn.extension()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-display">
+<script type="application/javascript">
+(function(root) {
+  function now() {
+    return new Date();
+  }
+
+  var force = true;
+  var py_version = '3.2.1'.replace('rc', '-rc.').replace('.dev', '-dev.');
+  var is_dev = py_version.indexOf("+") !== -1 || py_version.indexOf("-") !== -1;
+  var reloading = false;
+  var Bokeh = root.Bokeh;
+  var bokeh_loaded = Bokeh != null && (Bokeh.version === py_version || (Bokeh.versions !== undefined && Bokeh.versions.has(py_version)));
+
+  if (typeof (root._bokeh_timeout) === "undefined" || force) {
+    root._bokeh_timeout = Date.now() + 5000;
+    root._bokeh_failed_load = false;
+  }
+
+  function run_callbacks() {
+    try {
+      root._bokeh_onload_callbacks.forEach(function(callback) {
+        if (callback != null)
+          callback();
+      });
+    } finally {
+      delete root._bokeh_onload_callbacks;
+    }
+    console.debug("Bokeh: all callbacks have finished");
+  }
+
+  function load_libs(css_urls, js_urls, js_modules, js_exports, callback) {
+    if (css_urls == null) css_urls = [];
+    if (js_urls == null) js_urls = [];
+    if (js_modules == null) js_modules = [];
+    if (js_exports == null) js_exports = {};
+
+    root._bokeh_onload_callbacks.push(callback);
+
+    if (root._bokeh_is_loading > 0) {
+      console.debug("Bokeh: BokehJS is being loaded, scheduling callback at", now());
+      return null;
+    }
+    if (js_urls.length === 0 && js_modules.length === 0 && Object.keys(js_exports).length === 0) {
+      run_callbacks();
+      return null;
+    }
+    if (!reloading) {
+      console.debug("Bokeh: BokehJS not loaded, scheduling load and callback at", now());
+    }
+
+    function on_load() {
+      root._bokeh_is_loading--;
+      if (root._bokeh_is_loading === 0) {
+        console.debug("Bokeh: all BokehJS libraries/stylesheets loaded");
+        run_callbacks()
+      }
+    }
+    window._bokeh_on_load = on_load
+
+    function on_error() {
+      console.error("failed to load " + url);
+    }
+
+    var skip = [];
+    if (window.requirejs) {
+      window.requirejs.config({'packages': {}, 'paths': {'jspanel': 'https://cdn.jsdelivr.net/npm/jspanel4@4.12.0/dist/jspanel', 'jspanel-modal': 'https://cdn.jsdelivr.net/npm/jspanel4@4.12.0/dist/extensions/modal/jspanel.modal', 'jspanel-tooltip': 'https://cdn.jsdelivr.net/npm/jspanel4@4.12.0/dist/extensions/tooltip/jspanel.tooltip', 'jspanel-hint': 'https://cdn.jsdelivr.net/npm/jspanel4@4.12.0/dist/extensions/hint/jspanel.hint', 'jspanel-layout': 'https://cdn.jsdelivr.net/npm/jspanel4@4.12.0/dist/extensions/layout/jspanel.layout', 'jspanel-contextmenu': 'https://cdn.jsdelivr.net/npm/jspanel4@4.12.0/dist/extensions/contextmenu/jspanel.contextmenu', 'jspanel-dock': 'https://cdn.jsdelivr.net/npm/jspanel4@4.12.0/dist/extensions/dock/jspanel.dock', 'gridstack': 'https://cdn.jsdelivr.net/npm/gridstack@7.2.3/dist/gridstack-all', 'notyf': 'https://cdn.jsdelivr.net/npm/notyf@3/notyf.min'}, 'shim': {'jspanel': {'exports': 'jsPanel'}, 'gridstack': {'exports': 'GridStack'}}});
+      require(["jspanel"], function(jsPanel) {
+    window.jsPanel = jsPanel
+    on_load()
+      })
+      require(["jspanel-modal"], function() {
+    on_load()
+      })
+      require(["jspanel-tooltip"], function() {
+    on_load()
+      })
+      require(["jspanel-hint"], function() {
+    on_load()
+      })
+      require(["jspanel-layout"], function() {
+    on_load()
+      })
+      require(["jspanel-contextmenu"], function() {
+    on_load()
+      })
+      require(["jspanel-dock"], function() {
+    on_load()
+      })
+      require(["gridstack"], function(GridStack) {
+    window.GridStack = GridStack
+    on_load()
+      })
+      require(["notyf"], function() {
+    on_load()
+      })
+      root._bokeh_is_loading = css_urls.length + 9;
+    } else {
+      root._bokeh_is_loading = css_urls.length + js_urls.length + js_modules.length + Object.keys(js_exports).length;
+    }
+
+    var existing_stylesheets = []
+    var links = document.getElementsByTagName('link')
+    for (var i = 0; i < links.length; i++) {
+      var link = links[i]
+      if (link.href != null) {
+    existing_stylesheets.push(link.href)
+      }
+    }
+    for (var i = 0; i < css_urls.length; i++) {
+      var url = css_urls[i];
+      if (existing_stylesheets.indexOf(url) !== -1) {
+    on_load()
+    continue;
+      }
+      const element = document.createElement("link");
+      element.onload = on_load;
+      element.onerror = on_error;
+      element.rel = "stylesheet";
+      element.type = "text/css";
+      element.href = url;
+      console.debug("Bokeh: injecting link tag for BokehJS stylesheet: ", url);
+      document.body.appendChild(element);
+    }    if (((window['jsPanel'] !== undefined) && (!(window['jsPanel'] instanceof HTMLElement))) || window.requirejs) {
+      var urls = ['https://cdn.holoviz.org/panel/1.2.1/dist/bundled/floatpanel/jspanel4@4.12.0/dist/jspanel.js', 'https://cdn.holoviz.org/panel/1.2.1/dist/bundled/floatpanel/jspanel4@4.12.0/dist/extensions/modal/jspanel.modal.js', 'https://cdn.holoviz.org/panel/1.2.1/dist/bundled/floatpanel/jspanel4@4.12.0/dist/extensions/tooltip/jspanel.tooltip.js', 'https://cdn.holoviz.org/panel/1.2.1/dist/bundled/floatpanel/jspanel4@4.12.0/dist/extensions/hint/jspanel.hint.js', 'https://cdn.holoviz.org/panel/1.2.1/dist/bundled/floatpanel/jspanel4@4.12.0/dist/extensions/layout/jspanel.layout.js', 'https://cdn.holoviz.org/panel/1.2.1/dist/bundled/floatpanel/jspanel4@4.12.0/dist/extensions/contextmenu/jspanel.contextmenu.js', 'https://cdn.holoviz.org/panel/1.2.1/dist/bundled/floatpanel/jspanel4@4.12.0/dist/extensions/dock/jspanel.dock.js'];
+      for (var i = 0; i < urls.length; i++) {
+        skip.push(urls[i])
+      }
+    }    if (((window['GridStack'] !== undefined) && (!(window['GridStack'] instanceof HTMLElement))) || window.requirejs) {
+      var urls = ['https://cdn.holoviz.org/panel/1.2.1/dist/bundled/gridstack/gridstack@7.2.3/dist/gridstack-all.js'];
+      for (var i = 0; i < urls.length; i++) {
+        skip.push(urls[i])
+      }
+    }    if (((window['Notyf'] !== undefined) && (!(window['Notyf'] instanceof HTMLElement))) || window.requirejs) {
+      var urls = ['https://cdn.holoviz.org/panel/1.2.1/dist/bundled/notificationarea/notyf@3/notyf.min.js'];
+      for (var i = 0; i < urls.length; i++) {
+        skip.push(urls[i])
+      }
+    }    var existing_scripts = []
+    var scripts = document.getElementsByTagName('script')
+    for (var i = 0; i < scripts.length; i++) {
+      var script = scripts[i]
+      if (script.src != null) {
+    existing_scripts.push(script.src)
+      }
+    }
+    for (var i = 0; i < js_urls.length; i++) {
+      var url = js_urls[i];
+      if (skip.indexOf(url) !== -1 || existing_scripts.indexOf(url) !== -1) {
+    if (!window.requirejs) {
+      on_load();
+    }
+    continue;
+      }
+      var element = document.createElement('script');
+      element.onload = on_load;
+      element.onerror = on_error;
+      element.async = false;
+      element.src = url;
+      console.debug("Bokeh: injecting script tag for BokehJS library: ", url);
+      document.head.appendChild(element);
+    }
+    for (var i = 0; i < js_modules.length; i++) {
+      var url = js_modules[i];
+      if (skip.indexOf(url) !== -1 || existing_scripts.indexOf(url) !== -1) {
+    if (!window.requirejs) {
+      on_load();
+    }
+    continue;
+      }
+      var element = document.createElement('script');
+      element.onload = on_load;
+      element.onerror = on_error;
+      element.async = false;
+      element.src = url;
+      element.type = "module";
+      console.debug("Bokeh: injecting script tag for BokehJS library: ", url);
+      document.head.appendChild(element);
+    }
+    for (const name in js_exports) {
+      var url = js_exports[name];
+      if (skip.indexOf(url) >= 0 || root[name] != null) {
+    if (!window.requirejs) {
+      on_load();
+    }
+    continue;
+      }
+      var element = document.createElement('script');
+      element.onerror = on_error;
+      element.async = false;
+      element.type = "module";
+      console.debug("Bokeh: injecting script tag for BokehJS library: ", url);
+      element.textContent = `
+      import ${name} from "${url}"
+      window.${name} = ${name}
+      window._bokeh_on_load()
+      `
+      document.head.appendChild(element);
+    }
+    if (!js_urls.length && !js_modules.length) {
+      on_load()
+    }
+  };
+
+  function inject_raw_css(css) {
+    const element = document.createElement("style");
+    element.appendChild(document.createTextNode(css));
+    document.body.appendChild(element);
+  }
+
+  var js_urls = ["https://cdn.bokeh.org/bokeh/release/bokeh-3.2.1.min.js", "https://cdn.bokeh.org/bokeh/release/bokeh-gl-3.2.1.min.js", "https://cdn.bokeh.org/bokeh/release/bokeh-widgets-3.2.1.min.js", "https://cdn.bokeh.org/bokeh/release/bokeh-tables-3.2.1.min.js", "https://cdn.holoviz.org/panel/1.2.1/dist/panel.min.js"];
+  var js_modules = [];
+  var js_exports = {};
+  var css_urls = [];
+  var inline_js = [    function(Bokeh) {
+      Bokeh.set_log_level("info");
+    },
+function(Bokeh) {} // ensure no trailing comma for IE
+  ];
+
+  function run_inline_js() {
+    if ((root.Bokeh !== undefined) || (force === true)) {
+      for (var i = 0; i < inline_js.length; i++) {
+        inline_js[i].call(root, root.Bokeh);
+      }
+      // Cache old bokeh versions
+      if (Bokeh != undefined && !reloading) {
+    var NewBokeh = root.Bokeh;
+    if (Bokeh.versions === undefined) {
+      Bokeh.versions = new Map();
+    }
+    if (NewBokeh.version !== Bokeh.version) {
+      Bokeh.versions.set(NewBokeh.version, NewBokeh)
+    }
+    root.Bokeh = Bokeh;
+      }} else if (Date.now() < root._bokeh_timeout) {
+      setTimeout(run_inline_js, 100);
+    } else if (!root._bokeh_failed_load) {
+      console.log("Bokeh: BokehJS failed to load within specified timeout.");
+      root._bokeh_failed_load = true;
+    }
+    root._bokeh_is_initializing = false
+  }
+
+  function load_or_wait() {
+    // Implement a backoff loop that tries to ensure we do not load multiple
+    // versions of Bokeh and its dependencies at the same time.
+    // In recent versions we use the root._bokeh_is_initializing flag
+    // to determine whether there is an ongoing attempt to initialize
+    // bokeh, however for backward compatibility we also try to ensure
+    // that we do not start loading a newer (Panel>=1.0 and Bokeh>3) version
+    // before older versions are fully initialized.
+    if (root._bokeh_is_initializing && Date.now() > root._bokeh_timeout) {
+      root._bokeh_is_initializing = false;
+      root._bokeh_onload_callbacks = undefined;
+      console.log("Bokeh: BokehJS was loaded multiple times but one version failed to initialize.");
+      load_or_wait();
+    } else if (root._bokeh_is_initializing || (typeof root._bokeh_is_initializing === "undefined" && root._bokeh_onload_callbacks !== undefined)) {
+      setTimeout(load_or_wait, 100);
+    } else {
+      Bokeh = root.Bokeh;
+      bokeh_loaded = Bokeh != null && (Bokeh.version === py_version || (Bokeh.versions !== undefined && Bokeh.versions.has(py_version)));
+      root._bokeh_is_initializing = true
+      root._bokeh_onload_callbacks = []
+      if (!reloading && (!bokeh_loaded || is_dev)) {
+    root.Bokeh = undefined;
+      }
+      load_libs(css_urls, js_urls, js_modules, js_exports, function() {
+    console.debug("Bokeh: BokehJS plotting callback run at", now());
+    run_inline_js();
+      });
+    }
+  }
+  // Give older versions of the autoload script a head-start to ensure
+  // they initialize before we start loading newer version.
+  setTimeout(load_or_wait, 100)
+}(window));
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<script type="application/javascript">
+
+if ((window.PyViz === undefined) || (window.PyViz instanceof HTMLElement)) {
+  window.PyViz = {comms: {}, comm_status:{}, kernels:{}, receivers: {}, plot_index: []}
+}
+
+
+    function JupyterCommManager() {
+    }
+
+    JupyterCommManager.prototype.register_target = function(plot_id, comm_id, msg_handler) {
+      if (window.comm_manager || ((window.Jupyter !== undefined) && (Jupyter.notebook.kernel != null))) {
+        var comm_manager = window.comm_manager || Jupyter.notebook.kernel.comm_manager;
+        comm_manager.register_target(comm_id, function(comm) {
+          comm.on_msg(msg_handler);
+        });
+      } else if ((plot_id in window.PyViz.kernels) && (window.PyViz.kernels[plot_id])) {
+        window.PyViz.kernels[plot_id].registerCommTarget(comm_id, function(comm) {
+          comm.onMsg = msg_handler;
+        });
+      } else if (typeof google != 'undefined' && google.colab.kernel != null) {
+        google.colab.kernel.comms.registerTarget(comm_id, (comm) => {
+          var messages = comm.messages[Symbol.asyncIterator]();
+          function processIteratorResult(result) {
+            var message = result.value;
+            console.log(message)
+            var content = {data: message.data, comm_id};
+            var buffers = []
+            for (var buffer of message.buffers || []) {
+              buffers.push(new DataView(buffer))
+            }
+            var metadata = message.metadata || {};
+            var msg = {content, buffers, metadata}
+            msg_handler(msg);
+            return messages.next().then(processIteratorResult);
+          }
+          return messages.next().then(processIteratorResult);
+        })
+      }
+    }
+
+    JupyterCommManager.prototype.get_client_comm = function(plot_id, comm_id, msg_handler) {
+      if (comm_id in window.PyViz.comms) {
+        return window.PyViz.comms[comm_id];
+      } else if (window.comm_manager || ((window.Jupyter !== undefined) && (Jupyter.notebook.kernel != null))) {
+        var comm_manager = window.comm_manager || Jupyter.notebook.kernel.comm_manager;
+        var comm = comm_manager.new_comm(comm_id, {}, {}, {}, comm_id);
+        if (msg_handler) {
+          comm.on_msg(msg_handler);
+        }
+      } else if ((plot_id in window.PyViz.kernels) && (window.PyViz.kernels[plot_id])) {
+        var comm = window.PyViz.kernels[plot_id].connectToComm(comm_id);
+        comm.open();
+        if (msg_handler) {
+          comm.onMsg = msg_handler;
+        }
+      } else if (typeof google != 'undefined' && google.colab.kernel != null) {
+        var comm_promise = google.colab.kernel.comms.open(comm_id)
+        comm_promise.then((comm) => {
+          window.PyViz.comms[comm_id] = comm;
+          if (msg_handler) {
+            var messages = comm.messages[Symbol.asyncIterator]();
+            function processIteratorResult(result) {
+              var message = result.value;
+              var content = {data: message.data};
+              var metadata = message.metadata || {comm_id};
+              var msg = {content, metadata}
+              msg_handler(msg);
+              return messages.next().then(processIteratorResult);
+            }
+            return messages.next().then(processIteratorResult);
+          }
+        }) 
+        var sendClosure = (data, metadata, buffers, disposeOnDone) => {
+          return comm_promise.then((comm) => {
+            comm.send(data, metadata, buffers, disposeOnDone);
+          });
+        };
+        var comm = {
+          send: sendClosure
+        };
+      }
+      window.PyViz.comms[comm_id] = comm;
+      return comm;
+    }
+    window.PyViz.comm_manager = new JupyterCommManager();
+    
+
+
+var JS_MIME_TYPE = 'application/javascript';
+var HTML_MIME_TYPE = 'text/html';
+var EXEC_MIME_TYPE = 'application/vnd.holoviews_exec.v0+json';
+var CLASS_NAME = 'output';
+
+/**
+ * Render data to the DOM node
+ */
+function render(props, node) {
+  var div = document.createElement("div");
+  var script = document.createElement("script");
+  node.appendChild(div);
+  node.appendChild(script);
+}
+
+/**
+ * Handle when a new output is added
+ */
+function handle_add_output(event, handle) {
+  var output_area = handle.output_area;
+  var output = handle.output;
+  if ((output.data == undefined) || (!output.data.hasOwnProperty(EXEC_MIME_TYPE))) {
+    return
+  }
+  var id = output.metadata[EXEC_MIME_TYPE]["id"];
+  var toinsert = output_area.element.find("." + CLASS_NAME.split(' ')[0]);
+  if (id !== undefined) {
+    var nchildren = toinsert.length;
+    var html_node = toinsert[nchildren-1].children[0];
+    html_node.innerHTML = output.data[HTML_MIME_TYPE];
+    var scripts = [];
+    var nodelist = html_node.querySelectorAll("script");
+    for (var i in nodelist) {
+      if (nodelist.hasOwnProperty(i)) {
+        scripts.push(nodelist[i])
+      }
+    }
+
+    scripts.forEach( function (oldScript) {
+      var newScript = document.createElement("script");
+      var attrs = [];
+      var nodemap = oldScript.attributes;
+      for (var j in nodemap) {
+        if (nodemap.hasOwnProperty(j)) {
+          attrs.push(nodemap[j])
+        }
+      }
+      attrs.forEach(function(attr) { newScript.setAttribute(attr.name, attr.value) });
+      newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+      oldScript.parentNode.replaceChild(newScript, oldScript);
+    });
+    if (JS_MIME_TYPE in output.data) {
+      toinsert[nchildren-1].children[1].textContent = output.data[JS_MIME_TYPE];
+    }
+    output_area._hv_plot_id = id;
+    if ((window.Bokeh !== undefined) && (id in Bokeh.index)) {
+      window.PyViz.plot_index[id] = Bokeh.index[id];
+    } else {
+      window.PyViz.plot_index[id] = null;
+    }
+  } else if (output.metadata[EXEC_MIME_TYPE]["server_id"] !== undefined) {
+    var bk_div = document.createElement("div");
+    bk_div.innerHTML = output.data[HTML_MIME_TYPE];
+    var script_attrs = bk_div.children[0].attributes;
+    for (var i = 0; i < script_attrs.length; i++) {
+      toinsert[toinsert.length - 1].childNodes[1].setAttribute(script_attrs[i].name, script_attrs[i].value);
+    }
+    // store reference to server id on output_area
+    output_area._bokeh_server_id = output.metadata[EXEC_MIME_TYPE]["server_id"];
+  }
+}
+
+/**
+ * Handle when an output is cleared or removed
+ */
+function handle_clear_output(event, handle) {
+  var id = handle.cell.output_area._hv_plot_id;
+  var server_id = handle.cell.output_area._bokeh_server_id;
+  if (((id === undefined) || !(id in PyViz.plot_index)) && (server_id !== undefined)) { return; }
+  var comm = window.PyViz.comm_manager.get_client_comm("hv-extension-comm", "hv-extension-comm", function () {});
+  if (server_id !== null) {
+    comm.send({event_type: 'server_delete', 'id': server_id});
+    return;
+  } else if (comm !== null) {
+    comm.send({event_type: 'delete', 'id': id});
+  }
+  delete PyViz.plot_index[id];
+  if ((window.Bokeh !== undefined) & (id in window.Bokeh.index)) {
+    var doc = window.Bokeh.index[id].model.document
+    doc.clear();
+    const i = window.Bokeh.documents.indexOf(doc);
+    if (i > -1) {
+      window.Bokeh.documents.splice(i, 1);
+    }
+  }
+}
+
+/**
+ * Handle kernel restart event
+ */
+function handle_kernel_cleanup(event, handle) {
+  delete PyViz.comms["hv-extension-comm"];
+  window.PyViz.plot_index = {}
+}
+
+/**
+ * Handle update_display_data messages
+ */
+function handle_update_output(event, handle) {
+  handle_clear_output(event, {cell: {output_area: handle.output_area}})
+  handle_add_output(event, handle)
+}
+
+function register_renderer(events, OutputArea) {
+  function append_mime(data, metadata, element) {
+    // create a DOM node to render to
+    var toinsert = this.create_output_subarea(
+    metadata,
+    CLASS_NAME,
+    EXEC_MIME_TYPE
+    );
+    this.keyboard_manager.register_events(toinsert);
+    // Render to node
+    var props = {data: data, metadata: metadata[EXEC_MIME_TYPE]};
+    render(props, toinsert[0]);
+    element.append(toinsert);
+    return toinsert
+  }
+
+  events.on('output_added.OutputArea', handle_add_output);
+  events.on('output_updated.OutputArea', handle_update_output);
+  events.on('clear_output.CodeCell', handle_clear_output);
+  events.on('delete.Cell', handle_clear_output);
+  events.on('kernel_ready.Kernel', handle_kernel_cleanup);
+
+  OutputArea.prototype.register_mime_type(EXEC_MIME_TYPE, append_mime, {
+    safe: true,
+    index: 0
+  });
+}
+
+if (window.Jupyter !== undefined) {
+  try {
+    var events = require('base/js/events');
+    var OutputArea = require('notebook/js/outputarea').OutputArea;
+    if (OutputArea.prototype.mime_types().indexOf(EXEC_MIME_TYPE) == -1) {
+      register_renderer(events, OutputArea);
+    }
+  } catch(err) {
+  }
+}
+
+</script>
+</div>
+<div class="cell-output cell-output-display">
+<style>*[data-root-id],
+*[data-root-id] > * {
+  box-sizing: border-box;
+  font-family: var(--jp-ui-font-family);
+  font-size: var(--jp-ui-font-size1);
+  color: var(--vscode-editor-foreground, var(--jp-ui-font-color1));
+}
+
+/* Override VSCode background color */
+.cell-output-ipywidget-background:has(
+    > .cell-output-ipywidget-background > .lm-Widget > *[data-root-id]
+  ),
+.cell-output-ipywidget-background:has(> .lm-Widget > *[data-root-id]) {
+  background-color: transparent !important;
+}
+</style>
+</div>
+<div class="cell-output cell-output-display">
+<div id="691b2ed7-f54f-45ca-96e1-2edb7bfef7e6">
+  <div id="e35142ee-3a7c-42eb-8983-9b4e440d78b0" data-root-id="691b2ed7-f54f-45ca-96e1-2edb7bfef7e6" style="display: contents;"></div>
+</div>
+<script type="application/javascript">(function(root) {
+  var docs_json = {"3247fae3-5f2d-426b-bc93-6994501118da":{"version":"3.2.1","title":"Bokeh Application","roots":[{"type":"object","name":"panel.models.browser.BrowserInfo","id":"691b2ed7-f54f-45ca-96e1-2edb7bfef7e6"},{"type":"object","name":"panel.models.comm_manager.CommManager","id":"f34f35b6-0b8d-44e6-bb0f-daea7fb3c01f","attributes":{"plot_id":"691b2ed7-f54f-45ca-96e1-2edb7bfef7e6","comm_id":"526c2cdd4356499699f03a7b2164cab3","client_comm_id":"7a9fd0523d4b4ae99f3057a0d2ca053b"}}],"defs":[{"type":"model","name":"ReactiveHTML1"},{"type":"model","name":"FlexBox1","properties":[{"name":"align_content","kind":"Any","default":"flex-start"},{"name":"align_items","kind":"Any","default":"flex-start"},{"name":"flex_direction","kind":"Any","default":"row"},{"name":"flex_wrap","kind":"Any","default":"wrap"},{"name":"justify_content","kind":"Any","default":"flex-start"}]},{"type":"model","name":"FloatPanel1","properties":[{"name":"config","kind":"Any","default":{"type":"map"}},{"name":"contained","kind":"Any","default":true},{"name":"position","kind":"Any","default":"right-top"},{"name":"offsetx","kind":"Any","default":null},{"name":"offsety","kind":"Any","default":null},{"name":"theme","kind":"Any","default":"primary"},{"name":"status","kind":"Any","default":"normalized"}]},{"type":"model","name":"GridStack1","properties":[{"name":"mode","kind":"Any","default":"warn"},{"name":"ncols","kind":"Any","default":null},{"name":"nrows","kind":"Any","default":null},{"name":"allow_resize","kind":"Any","default":true},{"name":"allow_drag","kind":"Any","default":true},{"name":"state","kind":"Any","default":[]}]},{"type":"model","name":"drag1","properties":[{"name":"slider_width","kind":"Any","default":5},{"name":"slider_color","kind":"Any","default":"black"},{"name":"value","kind":"Any","default":50}]},{"type":"model","name":"click1","properties":[{"name":"terminal_output","kind":"Any","default":""},{"name":"debug_name","kind":"Any","default":""},{"name":"clears","kind":"Any","default":0}]},{"type":"model","name":"FastWrapper1","properties":[{"name":"object","kind":"Any","default":null},{"name":"style","kind":"Any","default":null}]},{"type":"model","name":"NotificationAreaBase1","properties":[{"name":"js_events","kind":"Any","default":{"type":"map"}},{"name":"position","kind":"Any","default":"bottom-right"},{"name":"_clear","kind":"Any","default":0}]},{"type":"model","name":"NotificationArea1","properties":[{"name":"js_events","kind":"Any","default":{"type":"map"}},{"name":"notifications","kind":"Any","default":[]},{"name":"position","kind":"Any","default":"bottom-right"},{"name":"_clear","kind":"Any","default":0},{"name":"types","kind":"Any","default":[{"type":"map","entries":[["type","warning"],["background","#ffc107"],["icon",{"type":"map","entries":[["className","fas fa-exclamation-triangle"],["tagName","i"],["color","white"]]}]]},{"type":"map","entries":[["type","info"],["background","#007bff"],["icon",{"type":"map","entries":[["className","fas fa-info-circle"],["tagName","i"],["color","white"]]}]]}]}]},{"type":"model","name":"Notification","properties":[{"name":"background","kind":"Any","default":null},{"name":"duration","kind":"Any","default":3000},{"name":"icon","kind":"Any","default":null},{"name":"message","kind":"Any","default":""},{"name":"notification_type","kind":"Any","default":null},{"name":"_destroyed","kind":"Any","default":false}]},{"type":"model","name":"TemplateActions1","properties":[{"name":"open_modal","kind":"Any","default":0},{"name":"close_modal","kind":"Any","default":0}]},{"type":"model","name":"BootstrapTemplateActions1","properties":[{"name":"open_modal","kind":"Any","default":0},{"name":"close_modal","kind":"Any","default":0}]},{"type":"model","name":"MaterialTemplateActions1","properties":[{"name":"open_modal","kind":"Any","default":0},{"name":"close_modal","kind":"Any","default":0}]}]}};
+  var render_items = [{"docid":"3247fae3-5f2d-426b-bc93-6994501118da","roots":{"691b2ed7-f54f-45ca-96e1-2edb7bfef7e6":"e35142ee-3a7c-42eb-8983-9b4e440d78b0"},"root_ids":["691b2ed7-f54f-45ca-96e1-2edb7bfef7e6"]}];
+  var docs = Object.values(docs_json)
+  if (!docs) {
+    return
+  }
+  const py_version = docs[0].version.replace('rc', '-rc.').replace('.dev', '-dev.')
+  const is_dev = py_version.indexOf("+") !== -1 || py_version.indexOf("-") !== -1
+  function embed_document(root) {
+    var Bokeh = get_bokeh(root)
+    Bokeh.embed.embed_items_notebook(docs_json, render_items);
+    for (const render_item of render_items) {
+      for (const root_id of render_item.root_ids) {
+    const id_el = document.getElementById(root_id)
+    if (id_el.children.length && (id_el.children[0].className === 'bk-root')) {
+      const root_el = id_el.children[0]
+      root_el.id = root_el.id + '-rendered'
+    }
+      }
+    }
+  }
+  function get_bokeh(root) {
+    if (root.Bokeh === undefined) {
+      return null
+    } else if (root.Bokeh.version !== py_version && !is_dev) {
+      if (root.Bokeh.versions === undefined || !root.Bokeh.versions.has(py_version)) {
+    return null
+      }
+      return root.Bokeh.versions.get(py_version);
+    } else if (root.Bokeh.version === py_version) {
+      return root.Bokeh
+    }
+    return null
+  }
+  function is_loaded(root) {
+    var Bokeh = get_bokeh(root)
+    return (Bokeh != null && Bokeh.Panel !== undefined)
+  }
+  if (is_loaded(root)) {
+    embed_document(root);
+  } else {
+    var attempts = 0;
+    var timer = setInterval(function(root) {
+      if (is_loaded(root)) {
+        clearInterval(timer);
+        embed_document(root);
+      } else if (document.readyState == "complete") {
+        attempts++;
+        if (attempts > 200) {
+          clearInterval(timer);
+      var Bokeh = get_bokeh(root)
+      if (Bokeh == null || Bokeh.Panel == null) {
+            console.warn("Panel: ERROR: Unable to run Panel code because Bokeh or Panel library is missing");
+      } else {
+        console.warn("Panel: WARNING: Attempting to render but not all required libraries could be resolved.")
+        embed_document(root)
+      }
+        }
+      }
+    }, 25, root)
+  }
+})(window);</script>
+</div>
+</div>
+<p>Load in the pre-processed “LAcrime” data frame.</p>
+<div id="ecbbd9db-095f-4913-b5b5-a47a4358f969" class="cell" data-tags="[]" data-execution_count="2">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>LAcrime <span class="op">=</span> pd.read_parquet(<span class="st">"LAcrime_trimmed"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Next, we group the number of crimes by area, year, month, and crime type.</p>
+<div id="5f0533f4-c86e-412b-8eff-bd4e0f5116a9" class="cell" data-tags="[]" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>crime_counts <span class="op">=</span> LAcrime.groupby([<span class="st">"AREA"</span>, <span class="st">"Year"</span>, <span class="st">"Month"</span>, <span class="st">"Crime Type"</span>]).agg({</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Crm Cd"</span>: <span class="st">"count"</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>})</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Since there are some missingness/incompleteness in the data, we create a multiindex of all combinations of area, year, month, and crime type, and then fill in zeros for all the missing combinations.</p>
+<div id="1062cfc9-35ce-419a-aa50-67d2c29aa85c" class="cell" data-tags="[]" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>all_combinations <span class="op">=</span> pd.MultiIndex.from_product(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    [LAcrime[<span class="st">"AREA"</span>].unique(),</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>     LAcrime[<span class="st">"Year"</span>].unique(), </span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>     LAcrime[<span class="st">"Month"</span>].unique(),  </span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>     LAcrime[<span class="st">"Crime Type"</span>].unique()],</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    names <span class="op">=</span> [<span class="st">"AREA"</span>, <span class="st">"Year"</span>, <span class="st">"Month"</span>, <span class="st">"Crime Type"</span>]</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="c7568eda-78cf-4d65-bf05-3ed3ea5a3a55" class="cell" data-tags="[]" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>crime_counts <span class="op">=</span> crime_counts.reindex(all_combinations, fill_value <span class="op">=</span> <span class="dv">0</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>crime_counts <span class="op">=</span> crime_counts.reset_index()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="348ea698-2504-4d83-a859-f88de0f2f77d" class="cell" data-tags="[]" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>crime_counts <span class="op">=</span> crime_counts.sort_values(by <span class="op">=</span> [<span class="st">"AREA"</span>, <span class="st">'Year'</span>, <span class="st">'Month'</span>]).reset_index(drop <span class="op">=</span> <span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>The resulting “crime_counts” object looks like this:</p>
+<div id="8c233773-4d56-4f34-b2e1-11e93ccc553b" class="cell" data-tags="[]" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>crime_counts.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="7">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">AREA</th>
+<th data-quarto-table-cell-role="th">Year</th>
+<th data-quarto-table-cell-role="th">Month</th>
+<th data-quarto-table-cell-role="th">Crime Type</th>
+<th data-quarto-table-cell-role="th">Crm Cd</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>1</td>
+<td>2010</td>
+<td>1</td>
+<td>violent</td>
+<td>224</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>1</td>
+<td>2010</td>
+<td>1</td>
+<td>property</td>
+<td>223</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>1</td>
+<td>2010</td>
+<td>2</td>
+<td>violent</td>
+<td>182</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>1</td>
+<td>2010</td>
+<td>2</td>
+<td>property</td>
+<td>166</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>1</td>
+<td>2010</td>
+<td>3</td>
+<td>violent</td>
+<td>245</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<section id="sarima-forecasting" class="level3">
+<h3 class="anchored" data-anchor-id="sarima-forecasting">SARIMA forecasting</h3>
+<section id="why-sarima" class="level4">
+<h4 class="anchored" data-anchor-id="why-sarima">Why SARIMA?</h4>
+<p>Crime exhibits seasonality. Also, ARIMA model is a popular tool for forecasting future crimes. As such, SARIMA model is the natural extension which incorporates seasonality.</p>
+<p>Below, we model and forecast the number of violent and property crimes in the future. - The training data consists of data from January 2018 up to December 2022. Reasons for choosing 2018 as the starting year: - As explored in previous sections, there could be potential missingness or incomplete records in prior years. Including them into the training data might introduce additional noise due to missingness or incompleteness. - Data from more recent years should be more relevant for predicting future crimes. - We are withholding 2023 data as the validation set, built upon the assumption that 2023 data should be more complete and reliable. - The aim is the forecast the number of violent and property crimes in 2024.</p>
+<div id="5535aacf-0d75-41d7-b9b5-4cbcde6dbc50" class="cell" data-tags="[]" data-execution_count="8">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Perform SARIMA forecasting over each crime type and each area.</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>crime_types <span class="op">=</span> [<span class="st">"violent"</span>, <span class="st">"property"</span>]</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>areas <span class="op">=</span> crime_counts[<span class="st">"AREA"</span>].unique()</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>forecast_results <span class="op">=</span> []</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> crime_type <span class="kw">in</span> crime_types:</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> area <span class="kw">in</span> areas:</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>        area_data <span class="op">=</span> crime_counts[(crime_counts[<span class="st">"AREA"</span>] <span class="op">==</span> area) <span class="op">&amp;</span> (crime_counts[<span class="st">"Crime Type"</span>] <span class="op">==</span> crime_type)].copy()</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Create a Date column.</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>        area_data[<span class="st">"Date"</span>] <span class="op">=</span> pd.to_datetime(area_data[[<span class="st">"Year"</span>, <span class="st">"Month"</span>]].assign(DAY<span class="op">=</span><span class="dv">1</span>))</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>        area_data.set_index(<span class="st">"Date"</span>, inplace<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Training data: All data from the beginning of January 2018 until the end of December 2022.</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>        train_data <span class="op">=</span> area_data[(area_data.index <span class="op">&gt;=</span> <span class="st">"2018-01-01"</span>) <span class="op">&amp;</span> (area_data.index <span class="op">&lt;=</span> <span class="st">"2022-12-31"</span>)].copy()</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Log transformation.</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>        train_data[<span class="st">"Log_Crime_Count"</span>] <span class="op">=</span> np.log1p(train_data[<span class="st">"Crm Cd"</span>])</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Fit SARIMA models.</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>        target_var <span class="op">=</span> <span class="st">"Crm Cd"</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>        target_var_log <span class="op">=</span> <span class="st">"Log_Crime_Count"</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>        y_train <span class="op">=</span> train_data[target_var]</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>        y_train_log <span class="op">=</span> train_data[target_var_log]</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Fit on both versions.</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>        model <span class="op">=</span> auto_arima(y_train, seasonal <span class="op">=</span> <span class="va">True</span>, m <span class="op">=</span> <span class="dv">12</span>, stepwise <span class="op">=</span> <span class="va">True</span>, trace <span class="op">=</span> <span class="va">False</span>)</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>        model_log <span class="op">=</span> auto_arima(y_train_log, seasonal <span class="op">=</span> <span class="va">True</span>, m <span class="op">=</span> <span class="dv">12</span>, stepwise <span class="op">=</span> <span class="va">True</span>, trace <span class="op">=</span> <span class="va">False</span>)</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Forecast for the next 24 months.</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>        forecast, conf_int <span class="op">=</span> model.predict(n_periods <span class="op">=</span> <span class="dv">24</span>, return_conf_int <span class="op">=</span> <span class="va">True</span>)</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>        forecast_log, conf_int_log <span class="op">=</span> model_log.predict(n_periods <span class="op">=</span> <span class="dv">24</span>, return_conf_int <span class="op">=</span> <span class="va">True</span>)</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Back-transform log forecasts to original scale.</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>        forecast_original <span class="op">=</span> forecast</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>        conf_int_original <span class="op">=</span> conf_int</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>        forecast_log_original <span class="op">=</span> np.expm1(forecast_log)</span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>        conf_int_log_original <span class="op">=</span> np.expm1(conf_int_log)</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Clip the lower bound of the original prediction intervals to 0.</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a>        conf_int_clipped <span class="op">=</span> conf_int_original.copy()</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a>        conf_int_clipped[:, <span class="dv">0</span>] <span class="op">=</span> np.maximum(conf_int_clipped[:, <span class="dv">0</span>], <span class="dv">0</span>)</span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Extract SARIMA orders (p, d, q) and seasonal orders (P, D, Q, m).</span></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>        order <span class="op">=</span> model.order  <span class="co"># (p, d, q)</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>        seasonal_order <span class="op">=</span> model.seasonal_order  <span class="co"># (P, D, Q, m)</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>        </span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>        order_log <span class="op">=</span> model_log.order  <span class="co"># (p, d, q)</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>        seasonal_order_log <span class="op">=</span> model_log.seasonal_order  <span class="co"># (P, D, Q, m)</span></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Prepare forecast data for both versions.</span></span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>        forecast_df <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Crime_Type"</span>: [crime_type] <span class="op">*</span> <span class="dv">24</span>,</span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>            <span class="st">"AREA"</span>: [area] <span class="op">*</span> <span class="dv">24</span>,</span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Forecast_Original"</span>: forecast_original,</span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Lower_95_Original"</span>: conf_int_original[:, <span class="dv">0</span>],</span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Upper_95_Original"</span>: conf_int_original[:, <span class="dv">1</span>],</span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Lower_95_Clipped"</span>: conf_int_clipped[:, <span class="dv">0</span>],</span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Upper_95_Clipped"</span>: conf_int_clipped[:, <span class="dv">1</span>],</span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a>            <span class="st">"SARIMA_Order"</span>: [order] <span class="op">*</span> <span class="dv">24</span>,</span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Seasonal_Order"</span>: [seasonal_order] <span class="op">*</span> <span class="dv">24</span>,</span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Forecast_Log_Transformed"</span>: forecast_log_original,</span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Lower_95_Log_Transformed"</span>: conf_int_log_original[:, <span class="dv">0</span>],</span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Upper_95_Log_Transformed"</span>: conf_int_log_original[:, <span class="dv">1</span>],</span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>            <span class="st">"SARIMA_Order_Log_Transformed"</span>: [order_log] <span class="op">*</span> <span class="dv">24</span>,</span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Seasonal_Order_Log_Transformed"</span>: [seasonal_order_log] <span class="op">*</span> <span class="dv">24</span></span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a>        })</span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Add Year and Month.</span></span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a>        start_date <span class="op">=</span> <span class="st">"2023-01-01"</span></span>
+<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a>        forecast_dates <span class="op">=</span> pd.date_range(start <span class="op">=</span> start_date, periods <span class="op">=</span> <span class="dv">24</span>, freq <span class="op">=</span> <span class="st">'MS'</span>)</span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a>        forecast_df[<span class="st">"Year"</span>] <span class="op">=</span> forecast_dates.year</span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a>        forecast_df[<span class="st">"Month"</span>] <span class="op">=</span> forecast_dates.month</span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a>        forecast_results.append(forecast_df)</span>
+<span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-79"><a href="#cb8-79" aria-hidden="true" tabindex="-1"></a><span class="co"># Combine all forecasts into one DataFrame.</span></span>
+<span id="cb8-80"><a href="#cb8-80" aria-hidden="true" tabindex="-1"></a>final_forecast_df <span class="op">=</span> pd.concat(forecast_results, ignore_index <span class="op">=</span> <span class="va">True</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>For each area, we plot the time series for violent crimes and property crimes, including the training data, validation data, the forecasts, and the prediction intervals.</p>
+<div id="b2db9347-8184-4f36-bf89-75eb2bd90796" class="cell" data-tags="[]" data-execution_count="11">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>date_range <span class="op">=</span> pd.date_range(start <span class="op">=</span> <span class="st">"2018-01-01"</span>, periods <span class="op">=</span> <span class="dv">84</span>, freq <span class="op">=</span> <span class="st">'MS'</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>forecast_col <span class="op">=</span> <span class="st">"Forecast"</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>lower_col <span class="op">=</span> <span class="st">"Lower_95"</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>upper_col <span class="op">=</span> <span class="st">"Upper_95"</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> forecast_plot(area):</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define the combined data frame for violent crimes.</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    temp_forecast_violent <span class="op">=</span> final_forecast_df[(final_forecast_df[<span class="st">"Crime_Type"</span>] <span class="op">==</span> <span class="st">"violent"</span>) <span class="op">&amp;</span> (final_forecast_df[<span class="st">"AREA"</span>] <span class="op">==</span> area)]</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    temp_violent <span class="op">=</span> crime_counts[(crime_counts[<span class="st">"Year"</span>] <span class="op">&gt;=</span> <span class="dv">2018</span>) <span class="op">&amp;</span> (crime_counts[<span class="st">"Crime Type"</span>] <span class="op">==</span> <span class="st">"violent"</span>) <span class="op">&amp;</span> (crime_counts[<span class="st">"AREA"</span>] <span class="op">==</span> area)]</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    combined_df_violent <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Year"</span>: date_range.year,</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Month"</span>: date_range.month,</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Crime_Type"</span>: [<span class="st">"violent"</span>] <span class="op">*</span> <span class="dv">84</span>,</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>            <span class="st">"AREA"</span>: [area] <span class="op">*</span> <span class="dv">84</span>,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Count"</span>: pd.concat([temp_violent[<span class="st">"Crm Cd"</span>][:<span class="op">-</span><span class="dv">12</span>], pd.Series([np.nan] <span class="op">*</span> <span class="dv">12</span>)], ignore_index <span class="op">=</span> <span class="va">True</span>),</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Forecast"</span>: pd.concat([temp_violent[<span class="st">"Crm Cd"</span>][:<span class="op">-</span><span class="dv">24</span>], temp_forecast_violent[<span class="st">"Forecast_Original"</span>]], ignore_index <span class="op">=</span> <span class="va">True</span>),</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Lower_95"</span>: pd.concat([temp_violent[<span class="st">"Crm Cd"</span>][:<span class="op">-</span><span class="dv">24</span>], temp_forecast_violent[<span class="st">"Lower_95_Original"</span>]], ignore_index <span class="op">=</span> <span class="va">True</span>),</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Upper_95"</span>: pd.concat([temp_violent[<span class="st">"Crm Cd"</span>][:<span class="op">-</span><span class="dv">24</span>], temp_forecast_violent[<span class="st">"Upper_95_Original"</span>]], ignore_index <span class="op">=</span> <span class="va">True</span>)</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>        })</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    combined_df_violent[<span class="st">"Date"</span>] <span class="op">=</span> pd.to_datetime(combined_df_violent[[<span class="st">"Year"</span>, <span class="st">"Month"</span>]].assign(Day <span class="op">=</span> <span class="dv">1</span>))</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Define the combined data frame for property crimes.</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    temp_forecast_property <span class="op">=</span> final_forecast_df[(final_forecast_df[<span class="st">"Crime_Type"</span>] <span class="op">==</span> <span class="st">"property"</span>) <span class="op">&amp;</span> (final_forecast_df[<span class="st">"AREA"</span>] <span class="op">==</span> area)]</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    temp_property <span class="op">=</span> crime_counts[(crime_counts[<span class="st">"Year"</span>] <span class="op">&gt;=</span> <span class="dv">2018</span>) <span class="op">&amp;</span> (crime_counts[<span class="st">"Crime Type"</span>] <span class="op">==</span> <span class="st">"property"</span>) <span class="op">&amp;</span> (crime_counts[<span class="st">"AREA"</span>] <span class="op">==</span> area)]</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>    combined_df_property <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Year"</span>: date_range.year,</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Month"</span>: date_range.month,</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Crime_Type"</span>: [<span class="st">"property"</span>] <span class="op">*</span> <span class="dv">84</span>,</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>            <span class="st">"AREA"</span>: [area] <span class="op">*</span> <span class="dv">84</span>,</span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Count"</span>: pd.concat([temp_property[<span class="st">"Crm Cd"</span>][:<span class="op">-</span><span class="dv">12</span>], pd.Series([np.nan] <span class="op">*</span> <span class="dv">12</span>)], ignore_index <span class="op">=</span> <span class="va">True</span>),</span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Forecast"</span>: pd.concat([temp_property[<span class="st">"Crm Cd"</span>][:<span class="op">-</span><span class="dv">24</span>], temp_forecast_property[<span class="st">"Forecast_Original"</span>]], ignore_index <span class="op">=</span> <span class="va">True</span>),</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Lower_95"</span>: pd.concat([temp_property[<span class="st">"Crm Cd"</span>][:<span class="op">-</span><span class="dv">24</span>], temp_forecast_property[<span class="st">"Lower_95_Original"</span>]], ignore_index <span class="op">=</span> <span class="va">True</span>),</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>            <span class="st">"Upper_95"</span>: pd.concat([temp_property[<span class="st">"Crm Cd"</span>][:<span class="op">-</span><span class="dv">24</span>], temp_forecast_property[<span class="st">"Upper_95_Original"</span>]], ignore_index <span class="op">=</span> <span class="va">True</span>)</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>        })</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>    combined_df_property[<span class="st">"Date"</span>] <span class="op">=</span> pd.to_datetime(combined_df_property[[<span class="st">"Year"</span>, <span class="st">"Month"</span>]].assign(Day <span class="op">=</span> <span class="dv">1</span>))</span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Brush selection for highlighting a period.</span></span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>    brush <span class="op">=</span> alt.selection_interval(encodings <span class="op">=</span> [<span class="st">'x'</span>])</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Base chart for both violent and property crime.</span></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>    base_violent <span class="op">=</span> alt.Chart(combined_df_violent).encode(</span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> alt.X(<span class="st">"Date:T"</span>, title <span class="op">=</span> <span class="st">"Time Period"</span>, axis <span class="op">=</span> alt.Axis(<span class="bu">format</span> <span class="op">=</span> <span class="st">"%b %Y"</span>))</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a>    base_property <span class="op">=</span> alt.Chart(combined_df_property).encode(</span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>        x <span class="op">=</span> alt.X(<span class="st">"Date:T"</span>, title <span class="op">=</span> <span class="st">"Time Period"</span>, axis <span class="op">=</span> alt.Axis(<span class="bu">format</span> <span class="op">=</span> <span class="st">"%b %Y"</span>))</span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Historical line and tooltip.</span></span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>    historical_line_violent_joint <span class="op">=</span> base_violent.mark_line(color <span class="op">=</span> <span class="st">"blue"</span>).transform_filter(</span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a>        (alt.datum.Year <span class="op">&lt;=</span> <span class="dv">2022</span>) <span class="op">|</span> ((alt.datum.Year <span class="op">==</span> <span class="dv">2023</span>) <span class="op">&amp;</span> (alt.datum.Month <span class="op">==</span> <span class="dv">1</span>))</span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a>    ).encode(</span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> alt.Y(<span class="ss">f'</span><span class="sc">{</span>forecast_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Crime Count"</span>),</span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a>        tooltip <span class="op">=</span> [</span>
+<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Year:O"</span>, title <span class="op">=</span> <span class="st">"Year"</span>),</span>
+<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Month:O"</span>, title <span class="op">=</span> <span class="st">"Month"</span>),</span>
+<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="ss">f'</span><span class="sc">{</span>forecast_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Crime Count"</span>)</span>
+<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a>    historical_line_property_joint <span class="op">=</span> base_property.mark_line(color <span class="op">=</span> <span class="st">"blue"</span>).transform_filter(</span>
+<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a>        (alt.datum.Year <span class="op">&lt;=</span> <span class="dv">2022</span>) <span class="op">|</span> ((alt.datum.Year <span class="op">==</span> <span class="dv">2023</span>) <span class="op">&amp;</span> (alt.datum.Month <span class="op">==</span> <span class="dv">1</span>))</span>
+<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a>    ).encode(</span>
+<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> alt.Y(<span class="ss">f'</span><span class="sc">{</span>forecast_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Crime Count"</span>),</span>
+<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a>        tooltip <span class="op">=</span> [</span>
+<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Year:O"</span>, title <span class="op">=</span> <span class="st">"Year"</span>),</span>
+<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Month:O"</span>, title <span class="op">=</span> <span class="st">"Month"</span>),</span>
+<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="ss">f'</span><span class="sc">{</span>forecast_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Crime Count"</span>)</span>
+<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a>    historical_line_violent <span class="op">=</span> base_violent.mark_line(color <span class="op">=</span> <span class="st">"blue"</span>).transform_filter(</span>
+<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a>        alt.datum.Year <span class="op">&lt;=</span> <span class="dv">2023</span></span>
+<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a>    ).encode(</span>
+<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> alt.Y(<span class="st">"Count:Q"</span>, title <span class="op">=</span> <span class="st">"Crime Count"</span>),</span>
+<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a>        tooltip <span class="op">=</span> [</span>
+<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Year:O"</span>, title <span class="op">=</span> <span class="st">"Year"</span>),</span>
+<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Month:O"</span>, title <span class="op">=</span> <span class="st">"Month"</span>),</span>
+<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Count:Q"</span>, title <span class="op">=</span> <span class="st">"Crime Count"</span>)</span>
+<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a>    historical_line_property <span class="op">=</span> base_property.mark_line(color <span class="op">=</span> <span class="st">"blue"</span>).transform_filter(</span>
+<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a>        alt.datum.Year <span class="op">&lt;=</span> <span class="dv">2023</span></span>
+<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a>    ).encode(</span>
+<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> alt.Y(<span class="st">"Count:Q"</span>, title <span class="op">=</span> <span class="st">"Crime Count"</span>),</span>
+<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a>        tooltip <span class="op">=</span> [</span>
+<span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Year:O"</span>, title <span class="op">=</span> <span class="st">"Year"</span>),</span>
+<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Month:O"</span>, title <span class="op">=</span> <span class="st">"Month"</span>),</span>
+<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Count:Q"</span>, title <span class="op">=</span> <span class="st">"Crime Count"</span>)</span>
+<span id="cb9-91"><a href="#cb9-91" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb9-92"><a href="#cb9-92" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Forecast line and tooltip.</span></span>
+<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a>    forecast_line_violent <span class="op">=</span> base_violent.mark_line(color <span class="op">=</span> <span class="st">"red"</span>).transform_filter(</span>
+<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a>        alt.datum.Year <span class="op">&gt;=</span> <span class="dv">2023</span></span>
+<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a>    ).encode(</span>
+<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> alt.Y(<span class="ss">f'</span><span class="sc">{</span>forecast_col<span class="sc">}</span><span class="ss">:Q'</span>),</span>
+<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a>        tooltip <span class="op">=</span> [</span>
+<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Year:O"</span>, title <span class="op">=</span> <span class="st">"Year"</span>),</span>
+<span id="cb9-101"><a href="#cb9-101" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Month:O"</span>, title <span class="op">=</span> <span class="st">"Month"</span>),</span>
+<span id="cb9-102"><a href="#cb9-102" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="ss">f'</span><span class="sc">{</span>forecast_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Forecast"</span>),</span>
+<span id="cb9-103"><a href="#cb9-103" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="ss">f'</span><span class="sc">{</span>lower_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Lower Bound (95%)"</span>),</span>
+<span id="cb9-104"><a href="#cb9-104" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="ss">f'</span><span class="sc">{</span>upper_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Upper Bound (95%)"</span>)</span>
+<span id="cb9-105"><a href="#cb9-105" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb9-106"><a href="#cb9-106" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-107"><a href="#cb9-107" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-108"><a href="#cb9-108" aria-hidden="true" tabindex="-1"></a>    forecast_line_property <span class="op">=</span> base_property.mark_line(color <span class="op">=</span> <span class="st">"red"</span>).transform_filter(</span>
+<span id="cb9-109"><a href="#cb9-109" aria-hidden="true" tabindex="-1"></a>        alt.datum.Year <span class="op">&gt;=</span> <span class="dv">2023</span></span>
+<span id="cb9-110"><a href="#cb9-110" aria-hidden="true" tabindex="-1"></a>    ).encode(</span>
+<span id="cb9-111"><a href="#cb9-111" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> alt.Y(<span class="ss">f'</span><span class="sc">{</span>forecast_col<span class="sc">}</span><span class="ss">:Q'</span>),</span>
+<span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a>        tooltip <span class="op">=</span> [</span>
+<span id="cb9-113"><a href="#cb9-113" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Year:O"</span>, title <span class="op">=</span> <span class="st">"Year"</span>),</span>
+<span id="cb9-114"><a href="#cb9-114" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Month:O"</span>, title <span class="op">=</span> <span class="st">"Month"</span>),</span>
+<span id="cb9-115"><a href="#cb9-115" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="ss">f'</span><span class="sc">{</span>forecast_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Forecast"</span>),</span>
+<span id="cb9-116"><a href="#cb9-116" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="ss">f'</span><span class="sc">{</span>lower_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Lower Bound (95%)"</span>),</span>
+<span id="cb9-117"><a href="#cb9-117" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="ss">f'</span><span class="sc">{</span>upper_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Upper Bound (95%)"</span>)</span>
+<span id="cb9-118"><a href="#cb9-118" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb9-119"><a href="#cb9-119" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-120"><a href="#cb9-120" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-121"><a href="#cb9-121" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Markers for historical and forecast data.</span></span>
+<span id="cb9-122"><a href="#cb9-122" aria-hidden="true" tabindex="-1"></a>    historical_markers_violent_joint <span class="op">=</span> base_violent.mark_point(color <span class="op">=</span> <span class="st">"blue"</span>).transform_filter(</span>
+<span id="cb9-123"><a href="#cb9-123" aria-hidden="true" tabindex="-1"></a>        alt.datum.Year <span class="op">&lt;=</span> <span class="dv">2022</span></span>
+<span id="cb9-124"><a href="#cb9-124" aria-hidden="true" tabindex="-1"></a>    ).encode(</span>
+<span id="cb9-125"><a href="#cb9-125" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> alt.Y(<span class="ss">f'</span><span class="sc">{</span>forecast_col<span class="sc">}</span><span class="ss">:Q'</span>),</span>
+<span id="cb9-126"><a href="#cb9-126" aria-hidden="true" tabindex="-1"></a>        tooltip <span class="op">=</span> [</span>
+<span id="cb9-127"><a href="#cb9-127" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Year:O"</span>, title <span class="op">=</span> <span class="st">"Year"</span>),</span>
+<span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">'Month:O'</span>, title <span class="op">=</span> <span class="st">"Month"</span>),</span>
+<span id="cb9-129"><a href="#cb9-129" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="ss">f'</span><span class="sc">{</span>forecast_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Crime Count"</span>)</span>
+<span id="cb9-130"><a href="#cb9-130" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb9-131"><a href="#cb9-131" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-132"><a href="#cb9-132" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-133"><a href="#cb9-133" aria-hidden="true" tabindex="-1"></a>    historical_markers_property_joint <span class="op">=</span> base_property.mark_point(color <span class="op">=</span> <span class="st">"blue"</span>).transform_filter(</span>
+<span id="cb9-134"><a href="#cb9-134" aria-hidden="true" tabindex="-1"></a>        alt.datum.Year <span class="op">&lt;=</span> <span class="dv">2022</span></span>
+<span id="cb9-135"><a href="#cb9-135" aria-hidden="true" tabindex="-1"></a>    ).encode(</span>
+<span id="cb9-136"><a href="#cb9-136" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> alt.Y(<span class="ss">f'</span><span class="sc">{</span>forecast_col<span class="sc">}</span><span class="ss">:Q'</span>),</span>
+<span id="cb9-137"><a href="#cb9-137" aria-hidden="true" tabindex="-1"></a>        tooltip <span class="op">=</span> [</span>
+<span id="cb9-138"><a href="#cb9-138" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Year:O"</span>, title <span class="op">=</span> <span class="st">"Year"</span>),</span>
+<span id="cb9-139"><a href="#cb9-139" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Month:O"</span>, title <span class="op">=</span> <span class="st">"Month"</span>),</span>
+<span id="cb9-140"><a href="#cb9-140" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="ss">f'</span><span class="sc">{</span>forecast_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Crime Count"</span>)</span>
+<span id="cb9-141"><a href="#cb9-141" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb9-142"><a href="#cb9-142" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-143"><a href="#cb9-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-144"><a href="#cb9-144" aria-hidden="true" tabindex="-1"></a>    historical_markers_violent <span class="op">=</span> base_violent.mark_point(color <span class="op">=</span> <span class="st">"blue"</span>).transform_filter(</span>
+<span id="cb9-145"><a href="#cb9-145" aria-hidden="true" tabindex="-1"></a>        alt.datum.Year <span class="op">&lt;=</span> <span class="dv">2023</span></span>
+<span id="cb9-146"><a href="#cb9-146" aria-hidden="true" tabindex="-1"></a>    ).encode(</span>
+<span id="cb9-147"><a href="#cb9-147" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> alt.Y(<span class="st">"Count:Q"</span>),</span>
+<span id="cb9-148"><a href="#cb9-148" aria-hidden="true" tabindex="-1"></a>        tooltip <span class="op">=</span> [</span>
+<span id="cb9-149"><a href="#cb9-149" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Year:O"</span>, title <span class="op">=</span> <span class="st">"Year"</span>),</span>
+<span id="cb9-150"><a href="#cb9-150" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Month:O"</span>, title <span class="op">=</span> <span class="st">"Month"</span>),</span>
+<span id="cb9-151"><a href="#cb9-151" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Count:Q"</span>, title <span class="op">=</span> <span class="st">"Crime Count"</span>)</span>
+<span id="cb9-152"><a href="#cb9-152" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb9-153"><a href="#cb9-153" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-154"><a href="#cb9-154" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-155"><a href="#cb9-155" aria-hidden="true" tabindex="-1"></a>    historical_markers_property <span class="op">=</span> base_property.mark_point(color <span class="op">=</span> <span class="st">"blue"</span>).transform_filter(</span>
+<span id="cb9-156"><a href="#cb9-156" aria-hidden="true" tabindex="-1"></a>        alt.datum.Year <span class="op">&lt;=</span> <span class="dv">2023</span></span>
+<span id="cb9-157"><a href="#cb9-157" aria-hidden="true" tabindex="-1"></a>    ).encode(</span>
+<span id="cb9-158"><a href="#cb9-158" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> alt.Y(<span class="st">"Count:Q"</span>),</span>
+<span id="cb9-159"><a href="#cb9-159" aria-hidden="true" tabindex="-1"></a>        tooltip <span class="op">=</span> [</span>
+<span id="cb9-160"><a href="#cb9-160" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Year:O"</span>, title <span class="op">=</span> <span class="st">"Year"</span>),</span>
+<span id="cb9-161"><a href="#cb9-161" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Month:O"</span>, title <span class="op">=</span> <span class="st">"Month"</span>),</span>
+<span id="cb9-162"><a href="#cb9-162" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Count:Q"</span>, title <span class="op">=</span> <span class="st">"Crime Count"</span>)</span>
+<span id="cb9-163"><a href="#cb9-163" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb9-164"><a href="#cb9-164" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-165"><a href="#cb9-165" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-166"><a href="#cb9-166" aria-hidden="true" tabindex="-1"></a>    forecast_markers_violent <span class="op">=</span> base_violent.mark_point(color <span class="op">=</span> <span class="st">"red"</span>).transform_filter(</span>
+<span id="cb9-167"><a href="#cb9-167" aria-hidden="true" tabindex="-1"></a>        alt.datum.Year <span class="op">&gt;=</span> <span class="dv">2023</span></span>
+<span id="cb9-168"><a href="#cb9-168" aria-hidden="true" tabindex="-1"></a>    ).encode(</span>
+<span id="cb9-169"><a href="#cb9-169" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> alt.Y(<span class="ss">f'</span><span class="sc">{</span>forecast_col<span class="sc">}</span><span class="ss">:Q'</span>),</span>
+<span id="cb9-170"><a href="#cb9-170" aria-hidden="true" tabindex="-1"></a>        tooltip <span class="op">=</span> [</span>
+<span id="cb9-171"><a href="#cb9-171" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Year:O"</span>, title <span class="op">=</span> <span class="st">"Year"</span>),</span>
+<span id="cb9-172"><a href="#cb9-172" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Month:O"</span>, title <span class="op">=</span> <span class="st">"Month"</span>),</span>
+<span id="cb9-173"><a href="#cb9-173" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="ss">f'</span><span class="sc">{</span>forecast_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Forecast"</span>),</span>
+<span id="cb9-174"><a href="#cb9-174" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="ss">f'</span><span class="sc">{</span>lower_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Lower Bound (95%)"</span>),</span>
+<span id="cb9-175"><a href="#cb9-175" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="ss">f'</span><span class="sc">{</span>upper_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Upper Bound (95%)"</span>)</span>
+<span id="cb9-176"><a href="#cb9-176" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb9-177"><a href="#cb9-177" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-178"><a href="#cb9-178" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-179"><a href="#cb9-179" aria-hidden="true" tabindex="-1"></a>    forecast_markers_property <span class="op">=</span> base_property.mark_point(color <span class="op">=</span> <span class="st">"red"</span>).transform_filter(</span>
+<span id="cb9-180"><a href="#cb9-180" aria-hidden="true" tabindex="-1"></a>        alt.datum.Year <span class="op">&gt;=</span> <span class="dv">2023</span></span>
+<span id="cb9-181"><a href="#cb9-181" aria-hidden="true" tabindex="-1"></a>    ).encode(</span>
+<span id="cb9-182"><a href="#cb9-182" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> alt.Y(<span class="ss">f'</span><span class="sc">{</span>forecast_col<span class="sc">}</span><span class="ss">:Q'</span>),</span>
+<span id="cb9-183"><a href="#cb9-183" aria-hidden="true" tabindex="-1"></a>        tooltip <span class="op">=</span> [</span>
+<span id="cb9-184"><a href="#cb9-184" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Year:O"</span>, title <span class="op">=</span> <span class="st">"Year"</span>),</span>
+<span id="cb9-185"><a href="#cb9-185" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="st">"Month:O"</span>, title <span class="op">=</span> <span class="st">"Month"</span>),</span>
+<span id="cb9-186"><a href="#cb9-186" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="ss">f'</span><span class="sc">{</span>forecast_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Forecast"</span>),</span>
+<span id="cb9-187"><a href="#cb9-187" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="ss">f'</span><span class="sc">{</span>lower_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Lower Bound (95%)"</span>),</span>
+<span id="cb9-188"><a href="#cb9-188" aria-hidden="true" tabindex="-1"></a>            alt.Tooltip(<span class="ss">f'</span><span class="sc">{</span>upper_col<span class="sc">}</span><span class="ss">:Q'</span>, title <span class="op">=</span> <span class="st">"Upper Bound (95%)"</span>)</span>
+<span id="cb9-189"><a href="#cb9-189" aria-hidden="true" tabindex="-1"></a>        ]</span>
+<span id="cb9-190"><a href="#cb9-190" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-191"><a href="#cb9-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-192"><a href="#cb9-192" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Confidence interval shading</span></span>
+<span id="cb9-193"><a href="#cb9-193" aria-hidden="true" tabindex="-1"></a>    confidence_area_violent <span class="op">=</span> base_violent.mark_area(opacity <span class="op">=</span> <span class="fl">0.2</span>, color <span class="op">=</span> <span class="st">"red"</span>).transform_filter(</span>
+<span id="cb9-194"><a href="#cb9-194" aria-hidden="true" tabindex="-1"></a>        alt.datum.Year <span class="op">&gt;=</span> <span class="dv">2023</span></span>
+<span id="cb9-195"><a href="#cb9-195" aria-hidden="true" tabindex="-1"></a>    ).encode(</span>
+<span id="cb9-196"><a href="#cb9-196" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> alt.Y(<span class="ss">f'</span><span class="sc">{</span>lower_col<span class="sc">}</span><span class="ss">:Q'</span>),</span>
+<span id="cb9-197"><a href="#cb9-197" aria-hidden="true" tabindex="-1"></a>        y2 <span class="op">=</span> upper_col</span>
+<span id="cb9-198"><a href="#cb9-198" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-199"><a href="#cb9-199" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-200"><a href="#cb9-200" aria-hidden="true" tabindex="-1"></a>    confidence_area_property <span class="op">=</span> base_property.mark_area(opacity <span class="op">=</span> <span class="fl">0.2</span>, color <span class="op">=</span> <span class="st">"red"</span>).transform_filter(</span>
+<span id="cb9-201"><a href="#cb9-201" aria-hidden="true" tabindex="-1"></a>        alt.datum.Year <span class="op">&gt;=</span> <span class="dv">2023</span></span>
+<span id="cb9-202"><a href="#cb9-202" aria-hidden="true" tabindex="-1"></a>    ).encode(</span>
+<span id="cb9-203"><a href="#cb9-203" aria-hidden="true" tabindex="-1"></a>        y <span class="op">=</span> alt.Y(<span class="ss">f'</span><span class="sc">{</span>lower_col<span class="sc">}</span><span class="ss">:Q'</span>),</span>
+<span id="cb9-204"><a href="#cb9-204" aria-hidden="true" tabindex="-1"></a>        y2 <span class="op">=</span> upper_col</span>
+<span id="cb9-205"><a href="#cb9-205" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb9-206"><a href="#cb9-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-207"><a href="#cb9-207" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Combine layers for violent and property crimes</span></span>
+<span id="cb9-208"><a href="#cb9-208" aria-hidden="true" tabindex="-1"></a>    violent_chart <span class="op">=</span> (</span>
+<span id="cb9-209"><a href="#cb9-209" aria-hidden="true" tabindex="-1"></a>        historical_line_violent <span class="op">+</span></span>
+<span id="cb9-210"><a href="#cb9-210" aria-hidden="true" tabindex="-1"></a>        historical_line_violent_joint <span class="op">+</span></span>
+<span id="cb9-211"><a href="#cb9-211" aria-hidden="true" tabindex="-1"></a>        forecast_line_violent <span class="op">+</span></span>
+<span id="cb9-212"><a href="#cb9-212" aria-hidden="true" tabindex="-1"></a>        historical_markers_violent <span class="op">+</span></span>
+<span id="cb9-213"><a href="#cb9-213" aria-hidden="true" tabindex="-1"></a>        historical_markers_violent_joint <span class="op">+</span></span>
+<span id="cb9-214"><a href="#cb9-214" aria-hidden="true" tabindex="-1"></a>        forecast_markers_violent <span class="op">+</span></span>
+<span id="cb9-215"><a href="#cb9-215" aria-hidden="true" tabindex="-1"></a>        confidence_area_violent</span>
+<span id="cb9-216"><a href="#cb9-216" aria-hidden="true" tabindex="-1"></a>    ).properties(</span>
+<span id="cb9-217"><a href="#cb9-217" aria-hidden="true" tabindex="-1"></a>        title <span class="op">=</span> <span class="st">"Violent Crime Forecast"</span>,</span>
+<span id="cb9-218"><a href="#cb9-218" aria-hidden="true" tabindex="-1"></a>        width <span class="op">=</span> <span class="dv">700</span>,</span>
+<span id="cb9-219"><a href="#cb9-219" aria-hidden="true" tabindex="-1"></a>        height <span class="op">=</span> <span class="dv">300</span></span>
+<span id="cb9-220"><a href="#cb9-220" aria-hidden="true" tabindex="-1"></a>    ).add_selection(brush)</span>
+<span id="cb9-221"><a href="#cb9-221" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-222"><a href="#cb9-222" aria-hidden="true" tabindex="-1"></a>    property_chart <span class="op">=</span> (</span>
+<span id="cb9-223"><a href="#cb9-223" aria-hidden="true" tabindex="-1"></a>        historical_line_property <span class="op">+</span></span>
+<span id="cb9-224"><a href="#cb9-224" aria-hidden="true" tabindex="-1"></a>        historical_line_property_joint <span class="op">+</span></span>
+<span id="cb9-225"><a href="#cb9-225" aria-hidden="true" tabindex="-1"></a>        forecast_line_property <span class="op">+</span></span>
+<span id="cb9-226"><a href="#cb9-226" aria-hidden="true" tabindex="-1"></a>        historical_markers_property <span class="op">+</span></span>
+<span id="cb9-227"><a href="#cb9-227" aria-hidden="true" tabindex="-1"></a>        historical_markers_property_joint <span class="op">+</span></span>
+<span id="cb9-228"><a href="#cb9-228" aria-hidden="true" tabindex="-1"></a>        forecast_markers_property <span class="op">+</span></span>
+<span id="cb9-229"><a href="#cb9-229" aria-hidden="true" tabindex="-1"></a>        confidence_area_property</span>
+<span id="cb9-230"><a href="#cb9-230" aria-hidden="true" tabindex="-1"></a>    ).properties(</span>
+<span id="cb9-231"><a href="#cb9-231" aria-hidden="true" tabindex="-1"></a>        title <span class="op">=</span> <span class="st">"Property Crime Forecast"</span>,</span>
+<span id="cb9-232"><a href="#cb9-232" aria-hidden="true" tabindex="-1"></a>        width <span class="op">=</span> <span class="dv">700</span>,</span>
+<span id="cb9-233"><a href="#cb9-233" aria-hidden="true" tabindex="-1"></a>        height <span class="op">=</span> <span class="dv">300</span></span>
+<span id="cb9-234"><a href="#cb9-234" aria-hidden="true" tabindex="-1"></a>    ).add_selection(brush)</span>
+<span id="cb9-235"><a href="#cb9-235" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-236"><a href="#cb9-236" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Combine both charts side by side.</span></span>
+<span id="cb9-237"><a href="#cb9-237" aria-hidden="true" tabindex="-1"></a>    final_chart <span class="op">=</span> alt.vconcat(violent_chart, property_chart)</span>
+<span id="cb9-238"><a href="#cb9-238" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-239"><a href="#cb9-239" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> final_chart</span>
+<span id="cb9-240"><a href="#cb9-240" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-241"><a href="#cb9-241" aria-hidden="true" tabindex="-1"></a>    <span class="co"># return pn.panel(final_chart)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Let’s have a look at the forecasts for Area 21.</p>
+<div id="afacfe95-2a8a-41c7-bb04-a33217b1d649" class="cell" data-tags="[]" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>forecast_plot(<span class="dv">21</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="12">
+
+<div id="altair-viz-e1eef4212eb04850b03f9edd2b61241f"></div>
+<script type="text/javascript">
+  var VEGA_DEBUG = (typeof VEGA_DEBUG == "undefined") ? {} : VEGA_DEBUG;
+  (function(spec, embedOpt){
+    let outputDiv = document.currentScript.previousElementSibling;
+    if (outputDiv.id !== "altair-viz-e1eef4212eb04850b03f9edd2b61241f") {
+      outputDiv = document.getElementById("altair-viz-e1eef4212eb04850b03f9edd2b61241f");
+    }
+    const paths = {
+      "vega": "https://cdn.jsdelivr.net/npm//vega@5?noext",
+      "vega-lib": "https://cdn.jsdelivr.net/npm//vega-lib?noext",
+      "vega-lite": "https://cdn.jsdelivr.net/npm//vega-lite@4.17.0?noext",
+      "vega-embed": "https://cdn.jsdelivr.net/npm//vega-embed@6?noext",
+    };
+
+    function maybeLoadScript(lib, version) {
+      var key = `${lib.replace("-", "")}_version`;
+      return (VEGA_DEBUG[key] == version) ?
+        Promise.resolve(paths[lib]) :
+        new Promise(function(resolve, reject) {
+          var s = document.createElement('script');
+          document.getElementsByTagName("head")[0].appendChild(s);
+          s.async = true;
+          s.onload = () => {
+            VEGA_DEBUG[key] = version;
+            return resolve(paths[lib]);
+          };
+          s.onerror = () => reject(`Error loading script: ${paths[lib]}`);
+          s.src = paths[lib];
+        });
+    }
+
+    function showError(err) {
+      outputDiv.innerHTML = `<div class="error" style="color:red;">${err}</div>`;
+      throw err;
+    }
+
+    function displayChart(vegaEmbed) {
+      vegaEmbed(outputDiv, spec, embedOpt)
+        .catch(err => showError(`Javascript Error: ${err.message}<br>This usually means there's a typo in your chart specification. See the javascript console for the full traceback.`));
+    }
+
+    if(typeof define === "function" && define.amd) {
+      requirejs.config({paths});
+      require(["vega-embed"], displayChart, err => showError(`Error loading script: ${err.message}`));
+    } else {
+      maybeLoadScript("vega", "5")
+        .then(() => maybeLoadScript("vega-lite", "4.17.0"))
+        .then(() => maybeLoadScript("vega-embed", "6"))
+        .catch(showError)
+        .then(() => displayChart(vegaEmbed));
+    }
+  })({"config": {"view": {"continuousWidth": 400, "continuousHeight": 300}}, "vconcat": [{"layer": [{"mark": {"type": "line", "color": "blue"}, "encoding": {"tooltip": [{"field": "Year", "title": "Year", "type": "ordinal"}, {"field": "Month", "title": "Month", "type": "ordinal"}, {"field": "Count", "title": "Crime Count", "type": "quantitative"}], "x": {"axis": {"format": "%b %Y"}, "field": "Date", "title": "Time Period", "type": "temporal"}, "y": {"field": "Count", "title": "Crime Count", "type": "quantitative"}}, "selection": {"selector002": {"type": "interval", "encodings": ["x"]}}, "transform": [{"filter": "(datum.Year <= 2023)"}]}, {"mark": {"type": "line", "color": "blue"}, "encoding": {"tooltip": [{"field": "Year", "title": "Year", "type": "ordinal"}, {"field": "Month", "title": "Month", "type": "ordinal"}, {"field": "Forecast", "title": "Crime Count", "type": "quantitative"}], "x": {"axis": {"format": "%b %Y"}, "field": "Date", "title": "Time Period", "type": "temporal"}, "y": {"field": "Forecast", "title": "Crime Count", "type": "quantitative"}}, "transform": [{"filter": "((datum.Year <= 2022) || ((datum.Year === 2023) && (datum.Month === 1)))"}]}, {"mark": {"type": "line", "color": "red"}, "encoding": {"tooltip": [{"field": "Year", "title": "Year", "type": "ordinal"}, {"field": "Month", "title": "Month", "type": "ordinal"}, {"field": "Forecast", "title": "Forecast", "type": "quantitative"}, {"field": "Lower_95", "title": "Lower Bound (95%)", "type": "quantitative"}, {"field": "Upper_95", "title": "Upper Bound (95%)", "type": "quantitative"}], "x": {"axis": {"format": "%b %Y"}, "field": "Date", "title": "Time Period", "type": "temporal"}, "y": {"field": "Forecast", "type": "quantitative"}}, "transform": [{"filter": "(datum.Year >= 2023)"}]}, {"mark": {"type": "point", "color": "blue"}, "encoding": {"tooltip": [{"field": "Year", "title": "Year", "type": "ordinal"}, {"field": "Month", "title": "Month", "type": "ordinal"}, {"field": "Count", "title": "Crime Count", "type": "quantitative"}], "x": {"axis": {"format": "%b %Y"}, "field": "Date", "title": "Time Period", "type": "temporal"}, "y": {"field": "Count", "type": "quantitative"}}, "transform": [{"filter": "(datum.Year <= 2023)"}]}, {"mark": {"type": "point", "color": "blue"}, "encoding": {"tooltip": [{"field": "Year", "title": "Year", "type": "ordinal"}, {"field": "Month", "title": "Month", "type": "ordinal"}, {"field": "Forecast", "title": "Crime Count", "type": "quantitative"}], "x": {"axis": {"format": "%b %Y"}, "field": "Date", "title": "Time Period", "type": "temporal"}, "y": {"field": "Forecast", "type": "quantitative"}}, "transform": [{"filter": "(datum.Year <= 2022)"}]}, {"mark": {"type": "point", "color": "red"}, "encoding": {"tooltip": [{"field": "Year", "title": "Year", "type": "ordinal"}, {"field": "Month", "title": "Month", "type": "ordinal"}, {"field": "Forecast", "title": "Forecast", "type": "quantitative"}, {"field": "Lower_95", "title": "Lower Bound (95%)", "type": "quantitative"}, {"field": "Upper_95", "title": "Upper Bound (95%)", "type": "quantitative"}], "x": {"axis": {"format": "%b %Y"}, "field": "Date", "title": "Time Period", "type": "temporal"}, "y": {"field": "Forecast", "type": "quantitative"}}, "transform": [{"filter": "(datum.Year >= 2023)"}]}, {"mark": {"type": "area", "color": "red", "opacity": 0.2}, "encoding": {"x": {"axis": {"format": "%b %Y"}, "field": "Date", "title": "Time Period", "type": "temporal"}, "y": {"field": "Lower_95", "type": "quantitative"}, "y2": {"field": "Upper_95"}}, "transform": [{"filter": "(datum.Year >= 2023)"}]}], "data": {"name": "data-1cd9aa024c54843fb6ddb6ccc4842886"}, "height": 300, "title": "Violent Crime Forecast", "width": 700}, {"layer": [{"mark": {"type": "line", "color": "blue"}, "encoding": {"tooltip": [{"field": "Year", "title": "Year", "type": "ordinal"}, {"field": "Month", "title": "Month", "type": "ordinal"}, {"field": "Count", "title": "Crime Count", "type": "quantitative"}], "x": {"axis": {"format": "%b %Y"}, "field": "Date", "title": "Time Period", "type": "temporal"}, "y": {"field": "Count", "title": "Crime Count", "type": "quantitative"}}, "selection": {"selector002": {"type": "interval", "encodings": ["x"]}}, "transform": [{"filter": "(datum.Year <= 2023)"}]}, {"mark": {"type": "line", "color": "blue"}, "encoding": {"tooltip": [{"field": "Year", "title": "Year", "type": "ordinal"}, {"field": "Month", "title": "Month", "type": "ordinal"}, {"field": "Forecast", "title": "Crime Count", "type": "quantitative"}], "x": {"axis": {"format": "%b %Y"}, "field": "Date", "title": "Time Period", "type": "temporal"}, "y": {"field": "Forecast", "title": "Crime Count", "type": "quantitative"}}, "transform": [{"filter": "((datum.Year <= 2022) || ((datum.Year === 2023) && (datum.Month === 1)))"}]}, {"mark": {"type": "line", "color": "red"}, "encoding": {"tooltip": [{"field": "Year", "title": "Year", "type": "ordinal"}, {"field": "Month", "title": "Month", "type": "ordinal"}, {"field": "Forecast", "title": "Forecast", "type": "quantitative"}, {"field": "Lower_95", "title": "Lower Bound (95%)", "type": "quantitative"}, {"field": "Upper_95", "title": "Upper Bound (95%)", "type": "quantitative"}], "x": {"axis": {"format": "%b %Y"}, "field": "Date", "title": "Time Period", "type": "temporal"}, "y": {"field": "Forecast", "type": "quantitative"}}, "transform": [{"filter": "(datum.Year >= 2023)"}]}, {"mark": {"type": "point", "color": "blue"}, "encoding": {"tooltip": [{"field": "Year", "title": "Year", "type": "ordinal"}, {"field": "Month", "title": "Month", "type": "ordinal"}, {"field": "Count", "title": "Crime Count", "type": "quantitative"}], "x": {"axis": {"format": "%b %Y"}, "field": "Date", "title": "Time Period", "type": "temporal"}, "y": {"field": "Count", "type": "quantitative"}}, "transform": [{"filter": "(datum.Year <= 2023)"}]}, {"mark": {"type": "point", "color": "blue"}, "encoding": {"tooltip": [{"field": "Year", "title": "Year", "type": "ordinal"}, {"field": "Month", "title": "Month", "type": "ordinal"}, {"field": "Forecast", "title": "Crime Count", "type": "quantitative"}], "x": {"axis": {"format": "%b %Y"}, "field": "Date", "title": "Time Period", "type": "temporal"}, "y": {"field": "Forecast", "type": "quantitative"}}, "transform": [{"filter": "(datum.Year <= 2022)"}]}, {"mark": {"type": "point", "color": "red"}, "encoding": {"tooltip": [{"field": "Year", "title": "Year", "type": "ordinal"}, {"field": "Month", "title": "Month", "type": "ordinal"}, {"field": "Forecast", "title": "Forecast", "type": "quantitative"}, {"field": "Lower_95", "title": "Lower Bound (95%)", "type": "quantitative"}, {"field": "Upper_95", "title": "Upper Bound (95%)", "type": "quantitative"}], "x": {"axis": {"format": "%b %Y"}, "field": "Date", "title": "Time Period", "type": "temporal"}, "y": {"field": "Forecast", "type": "quantitative"}}, "transform": [{"filter": "(datum.Year >= 2023)"}]}, {"mark": {"type": "area", "color": "red", "opacity": 0.2}, "encoding": {"x": {"axis": {"format": "%b %Y"}, "field": "Date", "title": "Time Period", "type": "temporal"}, "y": {"field": "Lower_95", "type": "quantitative"}, "y2": {"field": "Upper_95"}}, "transform": [{"filter": "(datum.Year >= 2023)"}]}], "data": {"name": "data-50b2d8151d134fd089d65ed7d23773fb"}, "height": 300, "title": "Property Crime Forecast", "width": 700}], "$schema": "https://vega.github.io/schema/vega-lite/v4.17.0.json", "datasets": {"data-1cd9aa024c54843fb6ddb6ccc4842886": [{"Year": 2018, "Month": 1, "Crime_Type": "violent", "AREA": 21, "Count": 213.0, "Forecast": 213.0, "Lower_95": 213.0, "Upper_95": 213.0, "Date": "2018-01-01T00:00:00"}, {"Year": 2018, "Month": 2, "Crime_Type": "violent", "AREA": 21, "Count": 219.0, "Forecast": 219.0, "Lower_95": 219.0, "Upper_95": 219.0, "Date": "2018-02-01T00:00:00"}, {"Year": 2018, "Month": 3, "Crime_Type": "violent", "AREA": 21, "Count": 224.0, "Forecast": 224.0, "Lower_95": 224.0, "Upper_95": 224.0, "Date": "2018-03-01T00:00:00"}, {"Year": 2018, "Month": 4, "Crime_Type": "violent", "AREA": 21, "Count": 200.0, "Forecast": 200.0, "Lower_95": 200.0, "Upper_95": 200.0, "Date": "2018-04-01T00:00:00"}, {"Year": 2018, "Month": 5, "Crime_Type": "violent", "AREA": 21, "Count": 216.0, "Forecast": 216.0, "Lower_95": 216.0, "Upper_95": 216.0, "Date": "2018-05-01T00:00:00"}, {"Year": 2018, "Month": 6, "Crime_Type": "violent", "AREA": 21, "Count": 239.0, "Forecast": 239.0, "Lower_95": 239.0, "Upper_95": 239.0, "Date": "2018-06-01T00:00:00"}, {"Year": 2018, "Month": 7, "Crime_Type": "violent", "AREA": 21, "Count": 227.0, "Forecast": 227.0, "Lower_95": 227.0, "Upper_95": 227.0, "Date": "2018-07-01T00:00:00"}, {"Year": 2018, "Month": 8, "Crime_Type": "violent", "AREA": 21, "Count": 208.0, "Forecast": 208.0, "Lower_95": 208.0, "Upper_95": 208.0, "Date": "2018-08-01T00:00:00"}, {"Year": 2018, "Month": 9, "Crime_Type": "violent", "AREA": 21, "Count": 212.0, "Forecast": 212.0, "Lower_95": 212.0, "Upper_95": 212.0, "Date": "2018-09-01T00:00:00"}, {"Year": 2018, "Month": 10, "Crime_Type": "violent", "AREA": 21, "Count": 205.0, "Forecast": 205.0, "Lower_95": 205.0, "Upper_95": 205.0, "Date": "2018-10-01T00:00:00"}, {"Year": 2018, "Month": 11, "Crime_Type": "violent", "AREA": 21, "Count": 181.0, "Forecast": 181.0, "Lower_95": 181.0, "Upper_95": 181.0, "Date": "2018-11-01T00:00:00"}, {"Year": 2018, "Month": 12, "Crime_Type": "violent", "AREA": 21, "Count": 204.0, "Forecast": 204.0, "Lower_95": 204.0, "Upper_95": 204.0, "Date": "2018-12-01T00:00:00"}, {"Year": 2019, "Month": 1, "Crime_Type": "violent", "AREA": 21, "Count": 174.0, "Forecast": 174.0, "Lower_95": 174.0, "Upper_95": 174.0, "Date": "2019-01-01T00:00:00"}, {"Year": 2019, "Month": 2, "Crime_Type": "violent", "AREA": 21, "Count": 179.0, "Forecast": 179.0, "Lower_95": 179.0, "Upper_95": 179.0, "Date": "2019-02-01T00:00:00"}, {"Year": 2019, "Month": 3, "Crime_Type": "violent", "AREA": 21, "Count": 180.0, "Forecast": 180.0, "Lower_95": 180.0, "Upper_95": 180.0, "Date": "2019-03-01T00:00:00"}, {"Year": 2019, "Month": 4, "Crime_Type": "violent", "AREA": 21, "Count": 185.0, "Forecast": 185.0, "Lower_95": 185.0, "Upper_95": 185.0, "Date": "2019-04-01T00:00:00"}, {"Year": 2019, "Month": 5, "Crime_Type": "violent", "AREA": 21, "Count": 206.0, "Forecast": 206.0, "Lower_95": 206.0, "Upper_95": 206.0, "Date": "2019-05-01T00:00:00"}, {"Year": 2019, "Month": 6, "Crime_Type": "violent", "AREA": 21, "Count": 194.0, "Forecast": 194.0, "Lower_95": 194.0, "Upper_95": 194.0, "Date": "2019-06-01T00:00:00"}, {"Year": 2019, "Month": 7, "Crime_Type": "violent", "AREA": 21, "Count": 223.0, "Forecast": 223.0, "Lower_95": 223.0, "Upper_95": 223.0, "Date": "2019-07-01T00:00:00"}, {"Year": 2019, "Month": 8, "Crime_Type": "violent", "AREA": 21, "Count": 194.0, "Forecast": 194.0, "Lower_95": 194.0, "Upper_95": 194.0, "Date": "2019-08-01T00:00:00"}, {"Year": 2019, "Month": 9, "Crime_Type": "violent", "AREA": 21, "Count": 192.0, "Forecast": 192.0, "Lower_95": 192.0, "Upper_95": 192.0, "Date": "2019-09-01T00:00:00"}, {"Year": 2019, "Month": 10, "Crime_Type": "violent", "AREA": 21, "Count": 154.0, "Forecast": 154.0, "Lower_95": 154.0, "Upper_95": 154.0, "Date": "2019-10-01T00:00:00"}, {"Year": 2019, "Month": 11, "Crime_Type": "violent", "AREA": 21, "Count": 153.0, "Forecast": 153.0, "Lower_95": 153.0, "Upper_95": 153.0, "Date": "2019-11-01T00:00:00"}, {"Year": 2019, "Month": 12, "Crime_Type": "violent", "AREA": 21, "Count": 169.0, "Forecast": 169.0, "Lower_95": 169.0, "Upper_95": 169.0, "Date": "2019-12-01T00:00:00"}, {"Year": 2020, "Month": 1, "Crime_Type": "violent", "AREA": 21, "Count": 162.0, "Forecast": 162.0, "Lower_95": 162.0, "Upper_95": 162.0, "Date": "2020-01-01T00:00:00"}, {"Year": 2020, "Month": 2, "Crime_Type": "violent", "AREA": 21, "Count": 164.0, "Forecast": 164.0, "Lower_95": 164.0, "Upper_95": 164.0, "Date": "2020-02-01T00:00:00"}, {"Year": 2020, "Month": 3, "Crime_Type": "violent", "AREA": 21, "Count": 162.0, "Forecast": 162.0, "Lower_95": 162.0, "Upper_95": 162.0, "Date": "2020-03-01T00:00:00"}, {"Year": 2020, "Month": 4, "Crime_Type": "violent", "AREA": 21, "Count": 193.0, "Forecast": 193.0, "Lower_95": 193.0, "Upper_95": 193.0, "Date": "2020-04-01T00:00:00"}, {"Year": 2020, "Month": 5, "Crime_Type": "violent", "AREA": 21, "Count": 158.0, "Forecast": 158.0, "Lower_95": 158.0, "Upper_95": 158.0, "Date": "2020-05-01T00:00:00"}, {"Year": 2020, "Month": 6, "Crime_Type": "violent", "AREA": 21, "Count": 220.0, "Forecast": 220.0, "Lower_95": 220.0, "Upper_95": 220.0, "Date": "2020-06-01T00:00:00"}, {"Year": 2020, "Month": 7, "Crime_Type": "violent", "AREA": 21, "Count": 196.0, "Forecast": 196.0, "Lower_95": 196.0, "Upper_95": 196.0, "Date": "2020-07-01T00:00:00"}, {"Year": 2020, "Month": 8, "Crime_Type": "violent", "AREA": 21, "Count": 191.0, "Forecast": 191.0, "Lower_95": 191.0, "Upper_95": 191.0, "Date": "2020-08-01T00:00:00"}, {"Year": 2020, "Month": 9, "Crime_Type": "violent", "AREA": 21, "Count": 163.0, "Forecast": 163.0, "Lower_95": 163.0, "Upper_95": 163.0, "Date": "2020-09-01T00:00:00"}, {"Year": 2020, "Month": 10, "Crime_Type": "violent", "AREA": 21, "Count": 149.0, "Forecast": 149.0, "Lower_95": 149.0, "Upper_95": 149.0, "Date": "2020-10-01T00:00:00"}, {"Year": 2020, "Month": 11, "Crime_Type": "violent", "AREA": 21, "Count": 144.0, "Forecast": 144.0, "Lower_95": 144.0, "Upper_95": 144.0, "Date": "2020-11-01T00:00:00"}, {"Year": 2020, "Month": 12, "Crime_Type": "violent", "AREA": 21, "Count": 174.0, "Forecast": 174.0, "Lower_95": 174.0, "Upper_95": 174.0, "Date": "2020-12-01T00:00:00"}, {"Year": 2021, "Month": 1, "Crime_Type": "violent", "AREA": 21, "Count": 166.0, "Forecast": 166.0, "Lower_95": 166.0, "Upper_95": 166.0, "Date": "2021-01-01T00:00:00"}, {"Year": 2021, "Month": 2, "Crime_Type": "violent", "AREA": 21, "Count": 121.0, "Forecast": 121.0, "Lower_95": 121.0, "Upper_95": 121.0, "Date": "2021-02-01T00:00:00"}, {"Year": 2021, "Month": 3, "Crime_Type": "violent", "AREA": 21, "Count": 169.0, "Forecast": 169.0, "Lower_95": 169.0, "Upper_95": 169.0, "Date": "2021-03-01T00:00:00"}, {"Year": 2021, "Month": 4, "Crime_Type": "violent", "AREA": 21, "Count": 142.0, "Forecast": 142.0, "Lower_95": 142.0, "Upper_95": 142.0, "Date": "2021-04-01T00:00:00"}, {"Year": 2021, "Month": 5, "Crime_Type": "violent", "AREA": 21, "Count": 171.0, "Forecast": 171.0, "Lower_95": 171.0, "Upper_95": 171.0, "Date": "2021-05-01T00:00:00"}, {"Year": 2021, "Month": 6, "Crime_Type": "violent", "AREA": 21, "Count": 200.0, "Forecast": 200.0, "Lower_95": 200.0, "Upper_95": 200.0, "Date": "2021-06-01T00:00:00"}, {"Year": 2021, "Month": 7, "Crime_Type": "violent", "AREA": 21, "Count": 193.0, "Forecast": 193.0, "Lower_95": 193.0, "Upper_95": 193.0, "Date": "2021-07-01T00:00:00"}, {"Year": 2021, "Month": 8, "Crime_Type": "violent", "AREA": 21, "Count": 189.0, "Forecast": 189.0, "Lower_95": 189.0, "Upper_95": 189.0, "Date": "2021-08-01T00:00:00"}, {"Year": 2021, "Month": 9, "Crime_Type": "violent", "AREA": 21, "Count": 188.0, "Forecast": 188.0, "Lower_95": 188.0, "Upper_95": 188.0, "Date": "2021-09-01T00:00:00"}, {"Year": 2021, "Month": 10, "Crime_Type": "violent", "AREA": 21, "Count": 194.0, "Forecast": 194.0, "Lower_95": 194.0, "Upper_95": 194.0, "Date": "2021-10-01T00:00:00"}, {"Year": 2021, "Month": 11, "Crime_Type": "violent", "AREA": 21, "Count": 185.0, "Forecast": 185.0, "Lower_95": 185.0, "Upper_95": 185.0, "Date": "2021-11-01T00:00:00"}, {"Year": 2021, "Month": 12, "Crime_Type": "violent", "AREA": 21, "Count": 176.0, "Forecast": 176.0, "Lower_95": 176.0, "Upper_95": 176.0, "Date": "2021-12-01T00:00:00"}, {"Year": 2022, "Month": 1, "Crime_Type": "violent", "AREA": 21, "Count": 208.0, "Forecast": 208.0, "Lower_95": 208.0, "Upper_95": 208.0, "Date": "2022-01-01T00:00:00"}, {"Year": 2022, "Month": 2, "Crime_Type": "violent", "AREA": 21, "Count": 174.0, "Forecast": 174.0, "Lower_95": 174.0, "Upper_95": 174.0, "Date": "2022-02-01T00:00:00"}, {"Year": 2022, "Month": 3, "Crime_Type": "violent", "AREA": 21, "Count": 183.0, "Forecast": 183.0, "Lower_95": 183.0, "Upper_95": 183.0, "Date": "2022-03-01T00:00:00"}, {"Year": 2022, "Month": 4, "Crime_Type": "violent", "AREA": 21, "Count": 168.0, "Forecast": 168.0, "Lower_95": 168.0, "Upper_95": 168.0, "Date": "2022-04-01T00:00:00"}, {"Year": 2022, "Month": 5, "Crime_Type": "violent", "AREA": 21, "Count": 262.0, "Forecast": 262.0, "Lower_95": 262.0, "Upper_95": 262.0, "Date": "2022-05-01T00:00:00"}, {"Year": 2022, "Month": 6, "Crime_Type": "violent", "AREA": 21, "Count": 219.0, "Forecast": 219.0, "Lower_95": 219.0, "Upper_95": 219.0, "Date": "2022-06-01T00:00:00"}, {"Year": 2022, "Month": 7, "Crime_Type": "violent", "AREA": 21, "Count": 244.0, "Forecast": 244.0, "Lower_95": 244.0, "Upper_95": 244.0, "Date": "2022-07-01T00:00:00"}, {"Year": 2022, "Month": 8, "Crime_Type": "violent", "AREA": 21, "Count": 207.0, "Forecast": 207.0, "Lower_95": 207.0, "Upper_95": 207.0, "Date": "2022-08-01T00:00:00"}, {"Year": 2022, "Month": 9, "Crime_Type": "violent", "AREA": 21, "Count": 201.0, "Forecast": 201.0, "Lower_95": 201.0, "Upper_95": 201.0, "Date": "2022-09-01T00:00:00"}, {"Year": 2022, "Month": 10, "Crime_Type": "violent", "AREA": 21, "Count": 232.0, "Forecast": 232.0, "Lower_95": 232.0, "Upper_95": 232.0, "Date": "2022-10-01T00:00:00"}, {"Year": 2022, "Month": 11, "Crime_Type": "violent", "AREA": 21, "Count": 195.0, "Forecast": 195.0, "Lower_95": 195.0, "Upper_95": 195.0, "Date": "2022-11-01T00:00:00"}, {"Year": 2022, "Month": 12, "Crime_Type": "violent", "AREA": 21, "Count": 170.0, "Forecast": 170.0, "Lower_95": 170.0, "Upper_95": 170.0, "Date": "2022-12-01T00:00:00"}, {"Year": 2023, "Month": 1, "Crime_Type": "violent", "AREA": 21, "Count": 190.0, "Forecast": 199.79864976206073, "Lower_95": 160.4956320669513, "Upper_95": 239.10166745717018, "Date": "2023-01-01T00:00:00"}, {"Year": 2023, "Month": 2, "Crime_Type": "violent", "AREA": 21, "Count": 164.0, "Forecast": 191.64286577849373, "Lower_95": 150.86243568740187, "Upper_95": 232.4232958695856, "Date": "2023-02-01T00:00:00"}, {"Year": 2023, "Month": 3, "Crime_Type": "violent", "AREA": 21, "Count": 191.0, "Forecast": 187.97285541832125, "Lower_95": 143.21556753840426, "Upper_95": 232.73014329823823, "Date": "2023-03-01T00:00:00"}, {"Year": 2023, "Month": 4, "Crime_Type": "violent", "AREA": 21, "Count": 215.0, "Forecast": 190.13462470622105, "Lower_95": 144.40547637663497, "Upper_95": 235.86377303580713, "Date": "2023-04-01T00:00:00"}, {"Year": 2023, "Month": 5, "Crime_Type": "violent", "AREA": 21, "Count": 213.0, "Forecast": 226.06478278905513, "Lower_95": 179.28898204171867, "Upper_95": 272.8405835363916, "Date": "2023-05-01T00:00:00"}, {"Year": 2023, "Month": 6, "Crime_Type": "violent", "AREA": 21, "Count": 172.0, "Forecast": 206.7620953650305, "Lower_95": 159.54957034584197, "Upper_95": 253.974620384219, "Date": "2023-06-01T00:00:00"}, {"Year": 2023, "Month": 7, "Crime_Type": "violent", "AREA": 21, "Count": 219.0, "Forecast": 216.77482944023376, "Lower_95": 169.22687657285425, "Upper_95": 264.32278230761324, "Date": "2023-07-01T00:00:00"}, {"Year": 2023, "Month": 8, "Crime_Type": "violent", "AREA": 21, "Count": 214.0, "Forecast": 200.41798735548116, "Lower_95": 152.69560280526358, "Upper_95": 248.14037190569874, "Date": "2023-08-01T00:00:00"}, {"Year": 2023, "Month": 9, "Crime_Type": "violent", "AREA": 21, "Count": 226.0, "Forecast": 194.91182564489873, "Lower_95": 147.0726168173959, "Upper_95": 242.75103447240156, "Date": "2023-09-01T00:00:00"}, {"Year": 2023, "Month": 10, "Crime_Type": "violent", "AREA": 21, "Count": 219.0, "Forecast": 209.3341047693914, "Lower_95": 161.42831516720696, "Upper_95": 257.2398943715758, "Date": "2023-10-01T00:00:00"}, {"Year": 2023, "Month": 11, "Crime_Type": "violent", "AREA": 21, "Count": 197.0, "Forecast": 192.32829523475147, "Lower_95": 144.3806921825411, "Upper_95": 240.27589828696182, "Date": "2023-11-01T00:00:00"}, {"Year": 2023, "Month": 12, "Crime_Type": "violent", "AREA": 21, "Count": 174.0, "Forecast": 185.47443613906958, "Lower_95": 137.5019232879822, "Upper_95": 233.44694899015695, "Date": "2023-12-01T00:00:00"}, {"Year": 2024, "Month": 1, "Crime_Type": "violent", "AREA": 21, "Count": null, "Forecast": 191.24144698815888, "Lower_95": 139.00230568038867, "Upper_95": 243.4805882959291, "Date": "2024-01-01T00:00:00"}, {"Year": 2024, "Month": 2, "Crime_Type": "violent", "AREA": 21, "Count": null, "Forecast": 190.1459401234911, "Lower_95": 137.52436400927027, "Upper_95": 242.76751623771193, "Date": "2024-02-01T00:00:00"}, {"Year": 2024, "Month": 3, "Crime_Type": "violent", "AREA": 21, "Count": null, "Forecast": 192.10771930955417, "Lower_95": 138.56771575450512, "Upper_95": 245.64772286460322, "Date": "2024-03-01T00:00:00"}, {"Year": 2024, "Month": 4, "Crime_Type": "violent", "AREA": 21, "Count": null, "Forecast": 192.22050035404533, "Lower_95": 138.4265768271938, "Upper_95": 246.01442388089686, "Date": "2024-04-01T00:00:00"}, {"Year": 2024, "Month": 5, "Crime_Type": "violent", "AREA": 21, "Count": null, "Forecast": 193.02222133518794, "Lower_95": 138.96554753834667, "Upper_95": 247.0788951320292, "Date": "2024-05-01T00:00:00"}, {"Year": 2024, "Month": 6, "Crime_Type": "violent", "AREA": 21, "Count": null, "Forecast": 193.288444651095, "Lower_95": 139.11702752860006, "Upper_95": 247.45986177358995, "Date": "2024-06-01T00:00:00"}, {"Year": 2024, "Month": 7, "Crime_Type": "violent", "AREA": 21, "Count": null, "Forecast": 193.67702021618942, "Lower_95": 139.41889291072653, "Upper_95": 247.9351475216523, "Date": "2024-07-01T00:00:00"}, {"Year": 2024, "Month": 8, "Crime_Type": "violent", "AREA": 21, "Count": null, "Forecast": 193.8891444301191, "Lower_95": 139.5850929703949, "Upper_95": 248.1931958898433, "Date": "2024-08-01T00:00:00"}, {"Year": 2024, "Month": 9, "Crime_Type": "violent", "AREA": 21, "Count": null, "Forecast": 194.10047903266587, "Lower_95": 139.76585776112293, "Upper_95": 248.43510030420882, "Date": "2024-09-01T00:00:00"}, {"Year": 2024, "Month": 10, "Crime_Type": "violent", "AREA": 21, "Count": null, "Forecast": 194.2422926399496, "Lower_95": 139.89011319290898, "Upper_95": 248.5944720869902, "Date": "2024-10-01T00:00:00"}, {"Year": 2024, "Month": 11, "Crime_Type": "violent", "AREA": 21, "Count": null, "Forecast": 194.36455171721514, "Lower_95": 140.00127970391006, "Upper_95": 248.7278237305202, "Date": "2024-11-01T00:00:00"}, {"Year": 2024, "Month": 12, "Crime_Type": "violent", "AREA": 21, "Count": null, "Forecast": 194.45409299659588, "Lower_95": 140.08423013155343, "Upper_95": 248.82395586163832, "Date": "2024-12-01T00:00:00"}], "data-50b2d8151d134fd089d65ed7d23773fb": [{"Year": 2018, "Month": 1, "Crime_Type": "property", "AREA": 21, "Count": 453.0, "Forecast": 453.0, "Lower_95": 453.0, "Upper_95": 453.0, "Date": "2018-01-01T00:00:00"}, {"Year": 2018, "Month": 2, "Crime_Type": "property", "AREA": 21, "Count": 375.0, "Forecast": 375.0, "Lower_95": 375.0, "Upper_95": 375.0, "Date": "2018-02-01T00:00:00"}, {"Year": 2018, "Month": 3, "Crime_Type": "property", "AREA": 21, "Count": 446.0, "Forecast": 446.0, "Lower_95": 446.0, "Upper_95": 446.0, "Date": "2018-03-01T00:00:00"}, {"Year": 2018, "Month": 4, "Crime_Type": "property", "AREA": 21, "Count": 412.0, "Forecast": 412.0, "Lower_95": 412.0, "Upper_95": 412.0, "Date": "2018-04-01T00:00:00"}, {"Year": 2018, "Month": 5, "Crime_Type": "property", "AREA": 21, "Count": 469.0, "Forecast": 469.0, "Lower_95": 469.0, "Upper_95": 469.0, "Date": "2018-05-01T00:00:00"}, {"Year": 2018, "Month": 6, "Crime_Type": "property", "AREA": 21, "Count": 411.0, "Forecast": 411.0, "Lower_95": 411.0, "Upper_95": 411.0, "Date": "2018-06-01T00:00:00"}, {"Year": 2018, "Month": 7, "Crime_Type": "property", "AREA": 21, "Count": 430.0, "Forecast": 430.0, "Lower_95": 430.0, "Upper_95": 430.0, "Date": "2018-07-01T00:00:00"}, {"Year": 2018, "Month": 8, "Crime_Type": "property", "AREA": 21, "Count": 390.0, "Forecast": 390.0, "Lower_95": 390.0, "Upper_95": 390.0, "Date": "2018-08-01T00:00:00"}, {"Year": 2018, "Month": 9, "Crime_Type": "property", "AREA": 21, "Count": 369.0, "Forecast": 369.0, "Lower_95": 369.0, "Upper_95": 369.0, "Date": "2018-09-01T00:00:00"}, {"Year": 2018, "Month": 10, "Crime_Type": "property", "AREA": 21, "Count": 396.0, "Forecast": 396.0, "Lower_95": 396.0, "Upper_95": 396.0, "Date": "2018-10-01T00:00:00"}, {"Year": 2018, "Month": 11, "Crime_Type": "property", "AREA": 21, "Count": 439.0, "Forecast": 439.0, "Lower_95": 439.0, "Upper_95": 439.0, "Date": "2018-11-01T00:00:00"}, {"Year": 2018, "Month": 12, "Crime_Type": "property", "AREA": 21, "Count": 458.0, "Forecast": 458.0, "Lower_95": 458.0, "Upper_95": 458.0, "Date": "2018-12-01T00:00:00"}, {"Year": 2019, "Month": 1, "Crime_Type": "property", "AREA": 21, "Count": 476.0, "Forecast": 476.0, "Lower_95": 476.0, "Upper_95": 476.0, "Date": "2019-01-01T00:00:00"}, {"Year": 2019, "Month": 2, "Crime_Type": "property", "AREA": 21, "Count": 384.0, "Forecast": 384.0, "Lower_95": 384.0, "Upper_95": 384.0, "Date": "2019-02-01T00:00:00"}, {"Year": 2019, "Month": 3, "Crime_Type": "property", "AREA": 21, "Count": 386.0, "Forecast": 386.0, "Lower_95": 386.0, "Upper_95": 386.0, "Date": "2019-03-01T00:00:00"}, {"Year": 2019, "Month": 4, "Crime_Type": "property", "AREA": 21, "Count": 387.0, "Forecast": 387.0, "Lower_95": 387.0, "Upper_95": 387.0, "Date": "2019-04-01T00:00:00"}, {"Year": 2019, "Month": 5, "Crime_Type": "property", "AREA": 21, "Count": 448.0, "Forecast": 448.0, "Lower_95": 448.0, "Upper_95": 448.0, "Date": "2019-05-01T00:00:00"}, {"Year": 2019, "Month": 6, "Crime_Type": "property", "AREA": 21, "Count": 376.0, "Forecast": 376.0, "Lower_95": 376.0, "Upper_95": 376.0, "Date": "2019-06-01T00:00:00"}, {"Year": 2019, "Month": 7, "Crime_Type": "property", "AREA": 21, "Count": 390.0, "Forecast": 390.0, "Lower_95": 390.0, "Upper_95": 390.0, "Date": "2019-07-01T00:00:00"}, {"Year": 2019, "Month": 8, "Crime_Type": "property", "AREA": 21, "Count": 400.0, "Forecast": 400.0, "Lower_95": 400.0, "Upper_95": 400.0, "Date": "2019-08-01T00:00:00"}, {"Year": 2019, "Month": 9, "Crime_Type": "property", "AREA": 21, "Count": 377.0, "Forecast": 377.0, "Lower_95": 377.0, "Upper_95": 377.0, "Date": "2019-09-01T00:00:00"}, {"Year": 2019, "Month": 10, "Crime_Type": "property", "AREA": 21, "Count": 397.0, "Forecast": 397.0, "Lower_95": 397.0, "Upper_95": 397.0, "Date": "2019-10-01T00:00:00"}, {"Year": 2019, "Month": 11, "Crime_Type": "property", "AREA": 21, "Count": 416.0, "Forecast": 416.0, "Lower_95": 416.0, "Upper_95": 416.0, "Date": "2019-11-01T00:00:00"}, {"Year": 2019, "Month": 12, "Crime_Type": "property", "AREA": 21, "Count": 400.0, "Forecast": 400.0, "Lower_95": 400.0, "Upper_95": 400.0, "Date": "2019-12-01T00:00:00"}, {"Year": 2020, "Month": 1, "Crime_Type": "property", "AREA": 21, "Count": 435.0, "Forecast": 435.0, "Lower_95": 435.0, "Upper_95": 435.0, "Date": "2020-01-01T00:00:00"}, {"Year": 2020, "Month": 2, "Crime_Type": "property", "AREA": 21, "Count": 361.0, "Forecast": 361.0, "Lower_95": 361.0, "Upper_95": 361.0, "Date": "2020-02-01T00:00:00"}, {"Year": 2020, "Month": 3, "Crime_Type": "property", "AREA": 21, "Count": 347.0, "Forecast": 347.0, "Lower_95": 347.0, "Upper_95": 347.0, "Date": "2020-03-01T00:00:00"}, {"Year": 2020, "Month": 4, "Crime_Type": "property", "AREA": 21, "Count": 283.0, "Forecast": 283.0, "Lower_95": 283.0, "Upper_95": 283.0, "Date": "2020-04-01T00:00:00"}, {"Year": 2020, "Month": 5, "Crime_Type": "property", "AREA": 21, "Count": 328.0, "Forecast": 328.0, "Lower_95": 328.0, "Upper_95": 328.0, "Date": "2020-05-01T00:00:00"}, {"Year": 2020, "Month": 6, "Crime_Type": "property", "AREA": 21, "Count": 362.0, "Forecast": 362.0, "Lower_95": 362.0, "Upper_95": 362.0, "Date": "2020-06-01T00:00:00"}, {"Year": 2020, "Month": 7, "Crime_Type": "property", "AREA": 21, "Count": 315.0, "Forecast": 315.0, "Lower_95": 315.0, "Upper_95": 315.0, "Date": "2020-07-01T00:00:00"}, {"Year": 2020, "Month": 8, "Crime_Type": "property", "AREA": 21, "Count": 260.0, "Forecast": 260.0, "Lower_95": 260.0, "Upper_95": 260.0, "Date": "2020-08-01T00:00:00"}, {"Year": 2020, "Month": 9, "Crime_Type": "property", "AREA": 21, "Count": 271.0, "Forecast": 271.0, "Lower_95": 271.0, "Upper_95": 271.0, "Date": "2020-09-01T00:00:00"}, {"Year": 2020, "Month": 10, "Crime_Type": "property", "AREA": 21, "Count": 282.0, "Forecast": 282.0, "Lower_95": 282.0, "Upper_95": 282.0, "Date": "2020-10-01T00:00:00"}, {"Year": 2020, "Month": 11, "Crime_Type": "property", "AREA": 21, "Count": 262.0, "Forecast": 262.0, "Lower_95": 262.0, "Upper_95": 262.0, "Date": "2020-11-01T00:00:00"}, {"Year": 2020, "Month": 12, "Crime_Type": "property", "AREA": 21, "Count": 338.0, "Forecast": 338.0, "Lower_95": 338.0, "Upper_95": 338.0, "Date": "2020-12-01T00:00:00"}, {"Year": 2021, "Month": 1, "Crime_Type": "property", "AREA": 21, "Count": 357.0, "Forecast": 357.0, "Lower_95": 357.0, "Upper_95": 357.0, "Date": "2021-01-01T00:00:00"}, {"Year": 2021, "Month": 2, "Crime_Type": "property", "AREA": 21, "Count": 275.0, "Forecast": 275.0, "Lower_95": 275.0, "Upper_95": 275.0, "Date": "2021-02-01T00:00:00"}, {"Year": 2021, "Month": 3, "Crime_Type": "property", "AREA": 21, "Count": 298.0, "Forecast": 298.0, "Lower_95": 298.0, "Upper_95": 298.0, "Date": "2021-03-01T00:00:00"}, {"Year": 2021, "Month": 4, "Crime_Type": "property", "AREA": 21, "Count": 317.0, "Forecast": 317.0, "Lower_95": 317.0, "Upper_95": 317.0, "Date": "2021-04-01T00:00:00"}, {"Year": 2021, "Month": 5, "Crime_Type": "property", "AREA": 21, "Count": 335.0, "Forecast": 335.0, "Lower_95": 335.0, "Upper_95": 335.0, "Date": "2021-05-01T00:00:00"}, {"Year": 2021, "Month": 6, "Crime_Type": "property", "AREA": 21, "Count": 356.0, "Forecast": 356.0, "Lower_95": 356.0, "Upper_95": 356.0, "Date": "2021-06-01T00:00:00"}, {"Year": 2021, "Month": 7, "Crime_Type": "property", "AREA": 21, "Count": 333.0, "Forecast": 333.0, "Lower_95": 333.0, "Upper_95": 333.0, "Date": "2021-07-01T00:00:00"}, {"Year": 2021, "Month": 8, "Crime_Type": "property", "AREA": 21, "Count": 333.0, "Forecast": 333.0, "Lower_95": 333.0, "Upper_95": 333.0, "Date": "2021-08-01T00:00:00"}, {"Year": 2021, "Month": 9, "Crime_Type": "property", "AREA": 21, "Count": 330.0, "Forecast": 330.0, "Lower_95": 330.0, "Upper_95": 330.0, "Date": "2021-09-01T00:00:00"}, {"Year": 2021, "Month": 10, "Crime_Type": "property", "AREA": 21, "Count": 383.0, "Forecast": 383.0, "Lower_95": 383.0, "Upper_95": 383.0, "Date": "2021-10-01T00:00:00"}, {"Year": 2021, "Month": 11, "Crime_Type": "property", "AREA": 21, "Count": 387.0, "Forecast": 387.0, "Lower_95": 387.0, "Upper_95": 387.0, "Date": "2021-11-01T00:00:00"}, {"Year": 2021, "Month": 12, "Crime_Type": "property", "AREA": 21, "Count": 429.0, "Forecast": 429.0, "Lower_95": 429.0, "Upper_95": 429.0, "Date": "2021-12-01T00:00:00"}, {"Year": 2022, "Month": 1, "Crime_Type": "property", "AREA": 21, "Count": 364.0, "Forecast": 364.0, "Lower_95": 364.0, "Upper_95": 364.0, "Date": "2022-01-01T00:00:00"}, {"Year": 2022, "Month": 2, "Crime_Type": "property", "AREA": 21, "Count": 381.0, "Forecast": 381.0, "Lower_95": 381.0, "Upper_95": 381.0, "Date": "2022-02-01T00:00:00"}, {"Year": 2022, "Month": 3, "Crime_Type": "property", "AREA": 21, "Count": 369.0, "Forecast": 369.0, "Lower_95": 369.0, "Upper_95": 369.0, "Date": "2022-03-01T00:00:00"}, {"Year": 2022, "Month": 4, "Crime_Type": "property", "AREA": 21, "Count": 372.0, "Forecast": 372.0, "Lower_95": 372.0, "Upper_95": 372.0, "Date": "2022-04-01T00:00:00"}, {"Year": 2022, "Month": 5, "Crime_Type": "property", "AREA": 21, "Count": 414.0, "Forecast": 414.0, "Lower_95": 414.0, "Upper_95": 414.0, "Date": "2022-05-01T00:00:00"}, {"Year": 2022, "Month": 6, "Crime_Type": "property", "AREA": 21, "Count": 365.0, "Forecast": 365.0, "Lower_95": 365.0, "Upper_95": 365.0, "Date": "2022-06-01T00:00:00"}, {"Year": 2022, "Month": 7, "Crime_Type": "property", "AREA": 21, "Count": 327.0, "Forecast": 327.0, "Lower_95": 327.0, "Upper_95": 327.0, "Date": "2022-07-01T00:00:00"}, {"Year": 2022, "Month": 8, "Crime_Type": "property", "AREA": 21, "Count": 332.0, "Forecast": 332.0, "Lower_95": 332.0, "Upper_95": 332.0, "Date": "2022-08-01T00:00:00"}, {"Year": 2022, "Month": 9, "Crime_Type": "property", "AREA": 21, "Count": 340.0, "Forecast": 340.0, "Lower_95": 340.0, "Upper_95": 340.0, "Date": "2022-09-01T00:00:00"}, {"Year": 2022, "Month": 10, "Crime_Type": "property", "AREA": 21, "Count": 315.0, "Forecast": 315.0, "Lower_95": 315.0, "Upper_95": 315.0, "Date": "2022-10-01T00:00:00"}, {"Year": 2022, "Month": 11, "Crime_Type": "property", "AREA": 21, "Count": 337.0, "Forecast": 337.0, "Lower_95": 337.0, "Upper_95": 337.0, "Date": "2022-11-01T00:00:00"}, {"Year": 2022, "Month": 12, "Crime_Type": "property", "AREA": 21, "Count": 371.0, "Forecast": 371.0, "Lower_95": 371.0, "Upper_95": 371.0, "Date": "2022-12-01T00:00:00"}, {"Year": 2023, "Month": 1, "Crime_Type": "property", "AREA": 21, "Count": 328.0, "Forecast": 348.28887430726326, "Lower_95": 281.2547245994368, "Upper_95": 415.3230240150897, "Date": "2023-01-01T00:00:00"}, {"Year": 2023, "Month": 2, "Crime_Type": "property", "AREA": 21, "Count": 353.0, "Forecast": 344.8853357326767, "Lower_95": 269.43097585530256, "Upper_95": 420.33969561005085, "Date": "2023-02-01T00:00:00"}, {"Year": 2023, "Month": 3, "Crime_Type": "property", "AREA": 21, "Count": 414.0, "Forecast": 350.0612486279843, "Lower_95": 267.03629080229615, "Upper_95": 433.08620645367245, "Date": "2023-03-01T00:00:00"}, {"Year": 2023, "Month": 4, "Crime_Type": "property", "AREA": 21, "Count": 361.0, "Forecast": 360.8246926957511, "Lower_95": 270.86399672573145, "Upper_95": 450.7853886657707, "Date": "2023-04-01T00:00:00"}, {"Year": 2023, "Month": 5, "Crime_Type": "property", "AREA": 21, "Count": 396.0, "Forecast": 370.5976650223238, "Lower_95": 274.1989616240762, "Upper_95": 466.99636842057134, "Date": "2023-05-01T00:00:00"}, {"Year": 2023, "Month": 6, "Crime_Type": "property", "AREA": 21, "Count": 422.0, "Forecast": 357.461063219841, "Lower_95": 255.0281914729437, "Upper_95": 459.89393496673824, "Date": "2023-06-01T00:00:00"}, {"Year": 2023, "Month": 7, "Crime_Type": "property", "AREA": 21, "Count": 388.0, "Forecast": 348.99034904052064, "Lower_95": 240.8595189698636, "Upper_95": 457.1211791111777, "Date": "2023-07-01T00:00:00"}, {"Year": 2023, "Month": 8, "Crime_Type": "property", "AREA": 21, "Count": 446.0, "Forecast": 355.21197245820713, "Lower_95": 241.66876654423658, "Upper_95": 468.7551783721777, "Date": "2023-08-01T00:00:00"}, {"Year": 2023, "Month": 9, "Crime_Type": "property", "AREA": 21, "Count": 436.0, "Forecast": 355.205645651551, "Lower_95": 236.49657773053949, "Upper_95": 473.9147135725625, "Date": "2023-09-01T00:00:00"}, {"Year": 2023, "Month": 10, "Crime_Type": "property", "AREA": 21, "Count": 428.0, "Forecast": 358.07007033955205, "Lower_95": 234.41075607601454, "Upper_95": 481.72938460308956, "Date": "2023-10-01T00:00:00"}, {"Year": 2023, "Month": 11, "Crime_Type": "property", "AREA": 21, "Count": 481.0, "Forecast": 367.9027611715849, "Lower_95": 239.4838793761833, "Upper_95": 496.3216429669866, "Date": "2023-11-01T00:00:00"}, {"Year": 2023, "Month": 12, "Crime_Type": "property", "AREA": 21, "Count": 460.0, "Forecast": 376.86526233997523, "Lower_95": 243.8570232293013, "Upper_95": 509.8735014506492, "Date": "2023-12-01T00:00:00"}, {"Year": 2024, "Month": 1, "Crime_Type": "property", "AREA": 21, "Count": null, "Forecast": 356.13739647963916, "Lower_95": 213.29971307787474, "Upper_95": 498.9750798814036, "Date": "2024-01-01T00:00:00"}, {"Year": 2024, "Month": 2, "Crime_Type": "property", "AREA": 21, "Count": null, "Forecast": 366.8129408469316, "Lower_95": 217.45556366634395, "Upper_95": 516.1703180275192, "Date": "2024-02-01T00:00:00"}, {"Year": 2024, "Month": 3, "Crime_Type": "property", "AREA": 21, "Count": null, "Forecast": 363.09993020192064, "Lower_95": 207.49579003545213, "Upper_95": 518.7040703683891, "Date": "2024-03-01T00:00:00"}, {"Year": 2024, "Month": 4, "Crime_Type": "property", "AREA": 21, "Count": null, "Forecast": 365.6519553860269, "Lower_95": 204.04233080992802, "Upper_95": 527.2615799621258, "Date": "2024-04-01T00:00:00"}, {"Year": 2024, "Month": 5, "Crime_Type": "property", "AREA": 21, "Count": null, "Forecast": 375.04536834949727, "Lower_95": 207.64556824713972, "Upper_95": 542.4451684518548, "Date": "2024-05-01T00:00:00"}, {"Year": 2024, "Month": 6, "Crime_Type": "property", "AREA": 21, "Count": null, "Forecast": 357.04065814143064, "Lower_95": 184.04437091829135, "Upper_95": 530.0369453645699, "Date": "2024-06-01T00:00:00"}, {"Year": 2024, "Month": 7, "Crime_Type": "property", "AREA": 21, "Count": null, "Forecast": 351.4856737433053, "Lower_95": 173.0683603690911, "Upper_95": 529.9029871175195, "Date": "2024-07-01T00:00:00"}, {"Year": 2024, "Month": 8, "Crime_Type": "property", "AREA": 21, "Count": null, "Forecast": 355.63596830648356, "Lower_95": 171.95755359655038, "Upper_95": 539.3143830164167, "Date": "2024-08-01T00:00:00"}, {"Year": 2024, "Month": 9, "Crime_Type": "property", "AREA": 21, "Count": null, "Forecast": 356.6558508682363, "Lower_95": 167.86288926999282, "Upper_95": 545.4488124664798, "Date": "2024-09-01T00:00:00"}, {"Year": 2024, "Month": 10, "Crime_Type": "property", "AREA": 21, "Count": null, "Forecast": 346.7222532426799, "Lower_95": 152.94969412318676, "Upper_95": 540.4948123621731, "Date": "2024-10-01T00:00:00"}, {"Year": 2024, "Month": 11, "Crime_Type": "property", "AREA": 21, "Count": null, "Forecast": 353.8008549347399, "Lower_95": 155.17349784010625, "Upper_95": 552.4282120293735, "Date": "2024-11-01T00:00:00"}, {"Year": 2024, "Month": 12, "Crime_Type": "property", "AREA": 21, "Count": null, "Forecast": 355.68014187722514, "Lower_95": 152.313851614048, "Upper_95": 559.0464321404023, "Date": "2024-12-01T00:00:00"}]}}, {"mode": "vega-lite"});
+</script>
+</div>
+</div>
+<section id="discussions" class="level5">
+<h5 class="anchored" data-anchor-id="discussions"><strong><u>Discussions:</u></strong></h5>
+<ul>
+<li>For violent crimes, it seems that the forecasts aligned with the actual observations reasonably in the validation period (January 2023 - December 2023).</li>
+<li>On the other hand, the violent crime forecasts for 2024 are very flat, indicating the forecasts for 2024 are pretty uninformative.</li>
+<li>For property crimes, the forecasts fluctuate around the same level, but the actual observations are gradually increasing with some indications of exhibiting trends.</li>
+</ul>
+<p>On top of that, we observe that (eventually) stable forecasts are the expectation rather than exception, although sometimes the prediction intervals remain informative. We also acknowledge that even with almost constant forecasts (and sometimes prediction intervals as well), most of the observations lie within the region enclosed by the prediction intervals.</p>
+<p>There could be multiple reasons behind these observations. - We may not be using sufficiently complicated models. - We may not have enough data to capture persistent long-term trend and/or seasonal effects. - No exogenous variables are included. - SARIMA may not be a good model to start with.</p>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>tojames@sas.upenn.edu</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>This page is built with ❤️ and <a href="https://quarto.org/">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

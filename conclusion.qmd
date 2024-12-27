@@ -1,0 +1,14 @@
+---
+title: "Discussion and Future Work"
+---
+
+This is the first attempt to perform clustering analysis to study the evolution of crime hotspots, and forecasting crimes using SARIMA models by areas. There are several lines of improvements:
+<div>
+   - Clustering analysis
+      - Different "eps" and "min_samples" may be more appropriate for different areas, rather than using the same set of parameters across all areas. For instance, it may be more appropriate to use different sets of parameters for urban and rural areas.
+      - Leveraging contextual information may provide insights on the parameter choices.
+      - Drawing convex hulls to represent the coverage of crime hotspots may cover more areas than what the data points suggest.
+   - Forecasting
+      - SARIMA models are linear models. Non-linear models or approaches, such as machine learning models or neural networks, worth exploring.
+      - Explore whether there are any exogenous variables that might influence crime rates are available and measured monthly.
+</div>

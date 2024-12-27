@@ -5,17 +5,12 @@ toc: false
 
 <div style="display: flex; gap: 10px; align-items: flex-start;">
 
-<img src="images/Eric.png" alt="Eric Delmelle" style="width: 170px; border-radius: 10px;">
+<img src="images/james.jpg" alt="James To" style="width: 170px; border-radius: 10px;">
 
 <div>
-  <p><span style="color:red">Hello everyone</span></p>
-  <p>On this about page, you might want to add more information about yourself, the project, or course. </p>
-
-  - My name is *Eric* **Delmelle**, the instructor for the course. 
-  - You can find more information about me on my [personal website](https://www.design.upenn.edu/people/eric-delmelle).
-  - <span style="color:orange">This site is an example site showing how to use Quarto for the final project for MUSA 550, during fall 2024.</span>
-  - <span style="color:gray">Write something about you</span>
-    - <span style="color:red">or about something you like</span>
+  - My name is Hon Kiu To (James), a second-year Ph.D. student in Criminology. 
+  - You can find more information about me on my [personal website](https://sites.google.com/view/hkjamesto/home).
+  - My research interests include forensic statistics and spatiotemporal crime trend modeling and forecasting. I am currently working on a project about facial recognition technology. More specifically, the project aims at evaluating the accuracy and fairness of the use of facial recognition technology by police.
 </div>
 
 </div>
